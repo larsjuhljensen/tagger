@@ -28,9 +28,11 @@ class Tagger:
 		self.styles  = {}
 		self.types = {}
 		self.blocked_documents = {}
-		self.blocked_lock = threading.Lock()
+		self.blocked_documents_lock = threading.Lock()
 		self.changelog_file = None
 		self.changelog_lock = threading.Lock()
+		self.document_types = {}
+		self.document_types_lock = threading.Lock()
 		self.cpp_tagger     = tagger_swig.Tagger(False) # False: Using string dict., not serial dict.
 	
 	def LoadChangelog(self, file):
@@ -52,7 +54,7 @@ class Tagger:
 			self.changelog_lock.acquire()
 			handle = open(self.changelog_file, 'a')
 			handle.write(datetime.datetime.now().strftime('%d%m%Y %H:%M:%S.%f\t'))
-			handle.write('\t'.join(map(self.UnicodeToStr, args)))
+			handle.write('\t'.join(map(str, args)))
 			handle.write('\n')
 			handle.close()
 			self.changelog_lock.release()
@@ -99,45 +101,47 @@ class Tagger:
 			document = ''.join((pre, self.script, post))
 		return document
 
-	def UnicodeToStr(self, unicode_or_str):
-		if isinstance(unicode_or_str, unicode):
-			return unicode_or_str.encode('utf8', 'replace')
-		else:
-			return unicode_or_str
-
 	def AddName(self, name, type, identifier, document_id=None):
 		if not self.CheckName(name, type, identifier):
-			self.cpp_tagger.add_name(self.UnicodeToStr(name), int(type), self.UnicodeToStr(identifier))
+			self.cpp_tagger.add_name(name, int(type), identifier)
 			self.SaveChangelog('AddName', name, type, identifier)
 		if document_id:
+			self.document_types_lock.acquire()
+			if document_id not in self.document_types:
+				self.document_types[document_id] = set()
+			self.document_types[document_id].add(int(type))
+			self.document_types_lock.release()
 			self.AllowName(name, document_id)
 		
 	def AllowName(self, name, document_id):
 		if self.IsBlocked(name, document_id):
-			self.cpp_tagger.allow_block_name(self.UnicodeToStr(name), self.UnicodeToStr(document_id), False)
+			self.cpp_tagger.allow_block_name(name, document_id, False)
 			self.SaveChangelog('AllowName', name, document_id)
 		
 	def BlockName(self, name, document_id):
 		if not self.IsBlocked(name, document_id):
-			self.cpp_tagger.allow_block_name(self.UnicodeToStr(name), self.UnicodeToStr(document_id), True)
-			self.blocked_lock.acquire()
+			self.cpp_tagger.allow_block_name(name, document_id, True)
+			self.blocked_documents_lock.acquire()
 			if name not in self.blocked_documents:
 				self.blocked_documents[name] = set()
 			self.blocked_documents[name].add(document_id)
 			if len(self.blocked_documents[name]) == 5:
-				self.cpp_tagger.allow_block_name(self.UnicodeToStr(name), None, True)
-			self.blocked_lock.release()
+				self.cpp_tagger.allow_block_name(name, None, True)
+			self.blocked_documents_lock.release()
 			self.SaveChangelog('BlockName', name, document_id)
 		
 	def CheckName(self, name, type, identifier):
-		return self.cpp_tagger.check_name(self.UnicodeToStr(name), type, self.UnicodeToStr(identifier))
+		return self.cpp_tagger.check_name(name, int(type), identifier)
 		
 	def IsBlocked(self, name, document_id):
-		return self.cpp_tagger.is_blocked(self.UnicodeToStr(document_id), self.UnicodeToStr(name))
+		return self.cpp_tagger.is_blocked(document_id, name)
 	
 	def GetMatches(self, document, document_id, entity_types, auto_detect=True, allow_overlap=False, protect_tags=True, max_tokens=5, ignore_blacklist=False):
-		document_id = self.UnicodeToStr(document_id)
-		
+		entity_types = set(entity_types)
+		self.document_types_lock.acquire()
+		if document_id in self.document_types:
+			entity_types.update(self.document_types[document_id])
+		self.document_types_lock.release()
 		params = tagger_swig.GetMatchesParams()
 		for entity_type in entity_types:
 			params.add_entity_type(entity_type)
@@ -146,15 +150,12 @@ class Tagger:
 		params.protect_tags = protect_tags
 		params.max_tokens = max_tokens
 		params.ignore_blacklist = ignore_blacklist
-		
 		return self.cpp_tagger.get_matches(document, document_id, params)
-		#return self.cpp_tagger.get_matches(document, document_id, entity_types, len(entity_types), auto_detect, allow_overlap, protect_tags, max_tokens, ignore_blacklist)
 		
 	def GetEntities(self, document, document_id, entity_types, auto_detect=True, allow_overlap=False, protect_tags=True, max_tokens=5, ignore_blacklist=False, format='xml'):
 		if format == None:
 			format = 'xml'
 		format = format.lower()
-		document_id = self.UnicodeToStr(document_id)
 		matches = self.GetMatches(document, document_id, entity_types, auto_detect, allow_overlap, protect_tags, max_tokens, ignore_blacklist)
 		doc = []
 		if format == 'xml':
@@ -213,7 +214,6 @@ class Tagger:
 		return doc
 	
 	def GetHTML(self, document, document_id, entity_types, auto_detect=True, allow_overlap=False, protect_tags=True, max_tokens=5, ignore_blacklist=False, html_footer=''):
-		document_id = self.UnicodeToStr(document_id)
 		doc = []
 		i = 0
 		all_types = set()
@@ -232,7 +232,7 @@ class Tagger:
 					str.append('%i.%s' % (type, id))
 					all_types.add(type)
 					match_types.add(type)
-				reflect_style = None
+				reflect_style = ''
 				for priority in self.styles:
 					if priority not in self.types:
 						reflect_style = self.styles[priority]
