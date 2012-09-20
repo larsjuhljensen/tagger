@@ -23,7 +23,8 @@ class Tagger:
 		self.script        = java_script
 		if self.script:
 			self.script = self.script.strip()
-		self.class_styles  = {}
+		self.styles  = {}
+		self.types = {}
 		self.cpp_tagger    = tagger_swig.Tagger(False) # False: Using string dict., not serial dict.
 		
 	def LoadHeaders(self, file):
@@ -40,12 +41,11 @@ class Tagger:
 
 	def LoadNames(self, file1, file2):
 		self.cpp_tagger.load_names(file1, file2)
-
-	def LoadStyles(self, file):
-		for line in open(file):
-			reflect_type, reflect_class, reflect_style = line.rstrip().split('\t')
-			self.class_styles[int(reflect_type)] = (reflect_class, reflect_style)
-
+	
+	def SetStyles(self, styles, types={}):
+		self.styles = styles
+		self.types = types
+	
 	def PostprocessDocument(self, uri, document):
 		if uri:
 			match_head_begin = self.re_head_begin.search(document)
@@ -171,7 +171,7 @@ class Tagger:
 		document_id = self.UnicodeToStr(document_id)
 		doc = []
 		i = 0
-		all_types = {}
+		all_types = set()
 		divs = {}
 		matches = self.GetMatches(document, document_id, entity_types, auto_detect, allow_overlap, protect_tags, max_tokens, ignore_blacklist)
 		matches.sort()
@@ -182,39 +182,29 @@ class Tagger:
 			if match[2] != None:
 				text = document[match[0]:match[1]+1]
 				str = []
-				match_types = {}
+				match_types = set()
 				for type, id in match[2]:
 					str.append('%i.%s' % (type, id))
-					all_types[type]    = 1
-					match_types[type] = 1
+					all_types.add(type)
+					match_types.add(type)
 				reflect_style = None
-				reflect_class = None
-				if len(match_types) == 0:
-					raise Exception, 'Match found but no types?? Matched "%s"' % text
-				elif len(match_types) == 1:
-					one_key = match_types.keys()[0]
-					if one_key in self.class_styles:
-						reflect_class, reflect_style = self.class_styles[one_key]
-					else:
-						if len(self.class_styles):
-							reflect_class, reflect_style = self.class_styles[0]
-						else:
-							reflect_class = 'reflect_ambigous'
-							reflect_style = 'background-color: #CCFFFF !important; color:black !important;'
-				else:
-					match_types = match_types.keys()
-					match_types.sort()
-					reflect_style = self.class_styles[0][1]
-					if (match_types[0] > 0 and match_types[-1] > 0):
-						reflect_class = self.class_styles[0][0]
-					else:
-						reflect_class = 'reflect_ambigous'
+				for priority in self.styles:
+					if priority not in self.types:
+						reflect_style = self.styles[priority]
+						break
+					f = self.types[priority]
+					for type in match_types:
+						if f(type):
+							reflect_style = self.styles[priority]
+							break
+					if reflect_style:
+						break
 				md5 = hashlib.md5()
 				str = ';'.join(str)
 				md5.update(str)
 				key = md5.hexdigest()
 				divs[key] = str
-				doc.append('<span class="%s" style="%s" ' % (reflect_class, reflect_style))
+				doc.append('<span class="reflect_tag" style="%s" ' % reflect_style)
 				doc.append('onMouseOver="startReflectPopupTimer(\'%s\',\'%s\')" ' % (key, text))
 				doc.append('onMouseOut="stopReflectPopupTimer()" ')
 				doc.append('onclick="showReflectPopup(\'%s\',\'%s\')">' % (key, text))
@@ -238,79 +228,3 @@ class Tagger:
 		doc.append(html_footer)
 		doc.append('</body>\n</html>\n')
 		return self.PostprocessDocument(document_id, ''.join(doc))
-		
-
-if __name__ == '__main__':
-
-	def test_simple(tagger):
-		document = '<html><head></head><script> OnClick( IL5 )</script><body>IL-5 can be written as: <pre>IL5</pre>. Inter-leukin 5 is also synonymous with <strong IL5="not-tagged">IL5</strong>. The name: Cl- is the negative Chloride ion. By the way: CL2- < CL- while CL3- > 42. Testcase: <testtag name-2="IL5"></body></html>'
-		for match in tagger.GetMatches(document, 'TEST', [9606, -1, -11]):
-			print '%i-%i: "%s"' % (match[0], match[1],  document[match[0]:match[1]+1])
-	
-	def test_speed(tagger):
-		doc = open('./docs/tp53.html').read()
-		uri = 'http://en.wikipedia.org/wiki/TP53'
-		rounds = 100
-		t1 = time.clock()
-		for i in range(rounds):
-			tagger.GetMatches(doc, uri, [9606, -1], auto_detect=True)
-		t2 = time.clock()
-		print '%i rounds took %fs or %f ms/round.' % (rounds, t2-t1, 1000*float(t2-t1)/rounds)
-		
-	def test_p53(tagger):
-		print tagger.GetHTML(open('./docs/tp53.html').read(), 'http://en.wikipedia.org/wiki/TP53', [9606, -1, -11])
-		
-	def test_utf8(tagger):
-		doc = open('../test/REST/test_utf8.pdf').read()
-		print tagger.GetMatches(doc, 'TEST', [9606])
-		
-	def test_clear(tagger):
-		il5a = '<html><body>IL5</body></html>'
-		il5b = tagger.GetHTML(il5a, None, [9606])
-		il5c = tagger.GetHTML(il5b, None, [9606])
-		print '[ORIGINAL HTML]:', il5a
-		print
-		print '[TAGGED HTML]  :', il5b
-		print '[TAGGED AGAIN] :', il5c
-		if il5c[:97] == il5b[:97]:
-			print '[OK: <span> tag was successfully removed by C/C++ tagger.]'
-		else:
-			print '[ERROR: <span> tag was NOT removed by C/C++ tagger.]'
-
-	test = {}
-	test['simple']   = test_simple
-	test['speed']    = test_speed
-	test['p53']      = test_p53
-	test['utf8']     = test_utf8
-	test['clear']    = test_clear
-	
-	if len(sys.argv) < 8:
-		sys.stderr.write("Must specify the following files:\n")
-		sys.stderr.write("  1: Java header\n")
-		sys.stderr.write("  2: Type-styles\n")
-		sys.stderr.write("  3: Entities\n")
-		sys.stderr.write("  4: Dictionary\n")
-		sys.stderr.write("  5: Global allow/block\n")
-		sys.stderr.write("  6: Local allow/block\n")
-		sys.stderr.write("  7: Document file or one of the tests:\n")
-		sys.stderr.write("Choose a test from:\n")
-		sys.stderr.write("  " + ' '.join(sorted(test.keys())))
-		sys.stderr.write('\n')
-		sys.exit(1)
-		
-	tagger = Tagger()
-	tagger.LoadHeaders(sys.argv[1])
-	tagger.LoadStyles(sys.argv[2])  
-	tagger.LoadNames(sys.argv[3], sys.argv[4])
-	tagger.LoadGlobal(sys.argv[5])
-	tagger.LoadLocal(sys.argv[6])
-	
-	file_or_test = sys.argv[7]
-	
-	if file_or_test in test:
-		test[file_or_test](tagger)
-	else:
-		if os.path.exists(file_or_test):
-			print tagger.GetHTML(open(file_or_test).read(), '', [9606, -22, -1, -11])
-		else:
-			sys.stderr.write('Unknown test function or file specified: "%s".\n' % file_or_test)
