@@ -3,9 +3,11 @@
 import os
 import re
 import sys
+import datetime
 import time
 import tempfile
 import hashlib
+import threading
 import urlparse
 import xml.sax.saxutils
 
@@ -25,8 +27,36 @@ class Tagger:
 			self.script = self.script.strip()
 		self.styles  = {}
 		self.types = {}
-		self.cpp_tagger    = tagger_swig.Tagger(False) # False: Using string dict., not serial dict.
-		
+		self.blocked_documents = {}
+		self.blocked_lock = threading.Lock()
+		self.changelog_file = None
+		self.changelog_lock = threading.Lock()
+		self.cpp_tagger     = tagger_swig.Tagger(False) # False: Using string dict., not serial dict.
+	
+	def LoadChangelog(self, file):
+		self.changelog_lock.acquire()
+		self.changelog_file = None
+		for line in open(file):
+			tokens = line[:-1].split('\t')
+			if tokens[1] == 'AddName':
+				self.AddName(tokens[2], tokens[3], tokens[4])
+			elif tokens[1] == 'AllowName':
+				self.AllowName(tokens[2], tokens[3])
+			elif tokens[1] == 'BlockName':
+				self.BlockName(tokens[2], tokens[3])
+		self.changelog_file = file
+		self.changelog_lock.release()
+	
+	def SaveChangelog(self, *args):
+		if self.changelog_file:
+			self.changelog_lock.acquire()
+			handle = open(self.changelog_file, 'a')
+			handle.write(datetime.datetime.now().strftime('%d%m%Y %H:%M:%S.%f\t'))
+			handle.write('\t'.join(map(self.UnicodeToStr, args)))
+			handle.write('\n')
+			handle.close()
+			self.changelog_lock.release()
+	
 	def LoadHeaders(self, file):
 		if file.startswith("http://"):
 			self.script = "<script src=\"%s\" type=\"text/javascript\"></script>\n" % file
@@ -75,25 +105,40 @@ class Tagger:
 		else:
 			return unicode_or_str
 
-	def AddName(self, name, type, identifier):
-		self.cpp_tagger.add_name(self.UnicodeToStr(name), type, self.UnicodeToStr(identifier))
+	def AddName(self, name, type, identifier, document_id=None):
+		if not self.CheckName(name, type, identifier):
+			self.cpp_tagger.add_name(self.UnicodeToStr(name), int(type), self.UnicodeToStr(identifier))
+			self.SaveChangelog('AddName', name, type, identifier)
+		if document_id:
+			self.AllowName(name, document_id)
 		
 	def AllowName(self, name, document_id):
-		self.cpp_tagger.allow_block_name(self.UnicodeToStr(name), self.UnicodeToStr(document_id), False)
+		if self.IsBlocked(name, document_id):
+			self.cpp_tagger.allow_block_name(self.UnicodeToStr(name), self.UnicodeToStr(document_id), False)
+			self.SaveChangelog('AllowName', name, document_id)
 		
 	def BlockName(self, name, document_id):
-		self.cpp_tagger.allow_block_name(self.UnicodeToStr(name), self.UnicodeToStr(document_id), True)
+		if not self.IsBlocked(name, document_id):
+			self.cpp_tagger.allow_block_name(self.UnicodeToStr(name), self.UnicodeToStr(document_id), True)
+			self.blocked_lock.acquire()
+			if name not in self.blocked_documents:
+				self.blocked_documents[name] = set()
+			self.blocked_documents[name].add(document_id)
+			if len(self.blocked_documents[name]) == 5:
+				self.cpp_tagger.allow_block_name(self.UnicodeToStr(name), None, True)
+			self.blocked_lock.release()
+			self.SaveChangelog('BlockName', name, document_id)
 		
 	def CheckName(self, name, type, identifier):
 		return self.cpp_tagger.check_name(self.UnicodeToStr(name), type, self.UnicodeToStr(identifier))
 		
+	def IsBlocked(self, name, document_id):
+		return self.cpp_tagger.is_blocked(self.UnicodeToStr(document_id), self.UnicodeToStr(name))
+	
 	def GetMatches(self, document, document_id, entity_types, auto_detect=True, allow_overlap=False, protect_tags=True, max_tokens=5, ignore_blacklist=False):
 		document_id = self.UnicodeToStr(document_id)
 		
 		params = tagger_swig.GetMatchesParams()
-		#print dir(params.entity_types)
-		#params.entity_types = entity_types
-		#params.entity_types = []
 		for entity_type in entity_types:
 			params.add_entity_type(entity_type)
 		params.auto_detect = auto_detect
