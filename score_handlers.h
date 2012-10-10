@@ -314,15 +314,21 @@ bool ScoreBatchHandler::validate_pair(int type1, int type2)
 		return type1 == 4932;
 	}
 	else if (type1 == -27) {
-		return type2 == -1 || type2 == -2 || type2 == -26;
+		return type2 == -1 || type2 == -2;
 	}
 	else if (type2 == -27) {
-		return type1 == -1 || type1 == -2 || type1 == -26;
+		return type1 == -1 || type1 == -2;
 	}
-	else if (type1 >= -26 && type1 <= -21) {
+	else if (type1 == -26) {
+		return type2 >= 0 || type2 == -25;
+	}
+	else if (type2 >= -26) {
+		return type1 >= 0 || type1 == -25;
+	}
+	else if (type1 >= -25 && type1 <= -21) {
 		return type2 >= 0;
 	}
-	else if (type2 >= -26 && type2 <= -21) {
+	else if (type2 >= -25 && type2 <= -21) {
 		return type1 >= 0;
 	}
 	else if (type1 == -2) {
