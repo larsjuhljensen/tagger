@@ -322,7 +322,7 @@ bool ScoreBatchHandler::validate_pair(int type1, int type2)
 	else if (type1 == -26) {
 		return type2 >= 0 || type2 == -25;
 	}
-	else if (type2 >= -26) {
+	else if (type2 == -26) {
 		return type1 >= 0 || type1 == -25;
 	}
 	else if (type1 >= -25 && type1 <= -21) {
