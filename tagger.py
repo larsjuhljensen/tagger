@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-
 import os
 import re
 import sys
@@ -11,9 +9,8 @@ import threading
 import urlparse
 import xml.sax.saxutils
 
-import tagger_swig # Our Python wrapper module for the C++ tagger library.
+import tagger_swig
 
-stop_flag = 0
 
 class Tagger:
 	
@@ -38,14 +35,15 @@ class Tagger:
 	def LoadChangelog(self, file):
 		self.changelog_lock.acquire()
 		self.changelog_file = None
-		for line in open(file):
-			tokens = line[:-1].split('\t')
-			if tokens[1] == 'AddName':
-				self.AddName(tokens[2], tokens[3], tokens[4])
-			elif tokens[1] == 'AllowName':
-				self.AllowName(tokens[2], tokens[3])
-			elif tokens[1] == 'BlockName':
-				self.BlockName(tokens[2], tokens[3])
+		if os.path.exists(file):
+			for line in open(file):
+				tokens = line[:-1].split('\t')
+				if tokens[1] == 'AddName':
+					self.AddName(tokens[2], tokens[3], tokens[4])
+				elif tokens[1] == 'AllowName':
+					self.AllowName(tokens[2], tokens[3])
+				elif tokens[1] == 'BlockName':
+					self.BlockName(tokens[2], tokens[3])
 		self.changelog_file = file
 		self.changelog_lock.release()
 	
@@ -136,7 +134,7 @@ class Tagger:
 	def IsBlocked(self, name, document_id):
 		return self.cpp_tagger.is_blocked(document_id, name)
 	
-	def GetMatches(self, document, document_id, entity_types, auto_detect=True, allow_overlap=False, protect_tags=True, max_tokens=5, ignore_blacklist=False):
+	def GetMatches(self, document, document_id, entity_types, auto_detect=True, allow_overlap=False, protect_tags=True, max_tokens=5, tokenize_characters=False, ignore_blacklist=False):
 		entity_types = set(entity_types)
 		self.document_types_lock.acquire()
 		if document_id in self.document_types:
@@ -149,14 +147,15 @@ class Tagger:
 		params.allow_overlap = allow_overlap
 		params.protect_tags = protect_tags
 		params.max_tokens = max_tokens
+		params.tokenize_characters = tokenize_characters
 		params.ignore_blacklist = ignore_blacklist
 		return self.cpp_tagger.get_matches(document, document_id, params)
 		
-	def GetEntities(self, document, document_id, entity_types, auto_detect=True, allow_overlap=False, protect_tags=True, max_tokens=5, ignore_blacklist=False, format='xml'):
+	def GetEntities(self, document, document_id, entity_types, auto_detect=True, allow_overlap=False, protect_tags=True, max_tokens=5, tokenize_characters=False, ignore_blacklist=False, format='xml'):
 		if format == None:
 			format = 'xml'
 		format = format.lower()
-		matches = self.GetMatches(document, document_id, entity_types, auto_detect, allow_overlap, protect_tags, max_tokens, ignore_blacklist)
+		matches = self.GetMatches(document, document_id, entity_types, auto_detect, allow_overlap, protect_tags, max_tokens, tokenize_characters, ignore_blacklist)
 		doc = []
 		if format == 'xml':
 			uniq = {}
@@ -213,12 +212,12 @@ class Tagger:
 			doc = '\n'.join(doc)
 		return doc
 	
-	def GetHTML(self, document, document_id, entity_types, auto_detect=True, allow_overlap=False, protect_tags=True, max_tokens=5, ignore_blacklist=False, html_footer=''):
+	def GetHTML(self, document, document_id, entity_types, auto_detect=True, allow_overlap=False, protect_tags=True, max_tokens=5, tokenize_characters=False, ignore_blacklist=False, html_footer=''):
 		doc = []
 		i = 0
 		all_types = set()
 		divs = {}
-		matches = self.GetMatches(document, document_id, entity_types, auto_detect, allow_overlap, protect_tags, max_tokens, ignore_blacklist)
+		matches = self.GetMatches(document, document_id, entity_types, auto_detect, allow_overlap, protect_tags, max_tokens, tokenize_characters, ignore_blacklist)
 		matches.sort()
 		for match in matches:
 			length = match[0] - i
