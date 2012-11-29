@@ -219,6 +219,9 @@ class Tagger:
 		divs = {}
 		matches = self.GetMatches(document, document_id, entity_types, auto_detect, allow_overlap, protect_tags, max_tokens, tokenize_characters, ignore_blacklist)
 		matches.sort()
+		priority_type_rule = {}
+		for priority in self.types:
+			priority_type_rule[priority] = lambda x: eval(self.types[priority])
 		for match in matches:
 			length = match[0] - i
 			if length > 0:
@@ -232,13 +235,12 @@ class Tagger:
 					all_types.add(type)
 					match_types.add(type)
 				reflect_style = ''
-				for priority in self.styles:
+				for priority in sorted(self.styles.iterkeys()):
 					if priority not in self.types:
 						reflect_style = self.styles[priority]
 						break
-					f = self.types[priority]
 					for type in match_types:
-						if f(type):
+						if priority_type_rule[priority](type):
 							reflect_style = self.styles[priority]
 							break
 					if reflect_style:
