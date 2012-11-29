@@ -272,3 +272,6 @@ class Tagger:
 		doc.append(html_footer)
 		doc.append('</body>\n</html>\n')
 		return self.PostprocessDocument(document_id, ''.join(doc))
+	
+	def ResolveName(self, name):
+		return self.cpp_tagger.resolve_name(name)

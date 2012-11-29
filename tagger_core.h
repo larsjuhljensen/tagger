@@ -179,6 +179,19 @@ bool Tagger::is_blocked(const char* document_id, const char* name)
 	}
 }
 
+Entities Tagger::resolve_name(const char* name) {
+	DICTIONARY::iterator search = this->names.find(name);
+	Entities entities;
+	entities.serials_only = this->serials_only;
+	if (search != this->names.end()) {
+		for (ENTITY_VECTOR::iterator it = search->second.begin(); it != search->second.end(); ++it) {
+			Entity& entity = *it;
+			entities.push_back(entity);
+		}
+	}
+	return entities;
+}
+
 void Tagger::load_global(const char* global_filename)
 {
 	if (global_filename == NULL) {

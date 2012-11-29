@@ -25,6 +25,12 @@ struct Entity
 	Identifier id;
 };
 
+class Entities: public vector<Entity>
+{
+	public:
+		bool serials_only;
+};
+
 class Match
 {
 	public:
@@ -42,10 +48,6 @@ class Match
 			this->entities = NULL;
 		}
 		
-		~Match()
-		{
-			delete this->entities;
-		}
 };
 
 class Matches: public vector<Match*> {

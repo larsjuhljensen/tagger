@@ -9,15 +9,31 @@
 }
 
 %typemap(freearg) int* entity_types {
-   delete $1;
+	delete $1;
+}
+
+%typemap(out) Entities {
+	PyObject* entities = PyTuple_New((int)$1.size());
+	for (int i = 0; i < (int)$1.size(); i++) {
+		PyObject* entity = PyTuple_New(2);
+		PyTuple_SetItem(entity, 0, PyInt_FromLong($1.at(i).type));
+		if ($1.serials_only) {
+			PyTuple_SetItem(entity, 1, PyInt_FromLong($1.at(i).id.serial));
+		}
+		else {
+			PyTuple_SetItem(entity, 1, PyString_FromString($1.at(i).id.string));
+		}
+		PyTuple_SetItem(entities, i, entity);
+	}
+	$result = entities;
 }
 
 %typemap(out) Matches {
-    PyObject* matches = PyList_New((int)$1.size());
+	PyObject* matches = PyList_New((int)$1.size());
 	for (int i = 0; i < (int)$1.size(); i++) {
 		PyObject* match = PyTuple_New(3);
 		PyTuple_SetItem(match, 0, PyInt_FromLong($1.at(i)->start));
-		PyTuple_SetItem(match, 1, PyInt_FromLong($1.at(i)->stop));	
+		PyTuple_SetItem(match, 1, PyInt_FromLong($1.at(i)->stop));
 		if ($1.at(i)->size > 0) {
 			PyObject* entities = PyTuple_New((int)$1.at(i)->size);
 			for (int j = 0; j < (int)$1.at(i)->size; j++) {

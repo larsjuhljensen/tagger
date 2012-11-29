@@ -54,6 +54,7 @@ class Tagger
 		void allow_block_name(const char* name, const char* document_id, bool block);
 		bool check_name(const char* name, int type, const char* identifier);
 		bool is_blocked(const char* document_id, const char* name);
+		Entities resolve_name(const char* name);
 		
 	public:
 		void load_global(const char* global_filename);
