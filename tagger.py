@@ -64,12 +64,20 @@ class Tagger:
 			self.script = open(file).read()
 			
 	def LoadGlobal(self, file):
+		if not os.path.exists(file):
+			raise IOError("File '%s' not found." % file)
 		self.cpp_tagger.load_global(file)
 		
 	def LoadLocal(self, file):
+		if not os.path.exists(file):
+			raise IOError("File '%s' not found." % file)
 		self.cpp_tagger.load_local(file)
 
 	def LoadNames(self, file1, file2):
+		if not os.path.exists(file1):
+			raise IOError("File '%s' not found." % file1)
+		if not os.path.exists(file2):
+			raise IOError("File '%s' not found." % file2)
 		self.cpp_tagger.load_names(file1, file2)
 	
 	def SetStyles(self, styles, types={}):
