@@ -135,6 +135,7 @@ class Tagger:
 		return self.cpp_tagger.is_blocked(document_id, name)
 	
 	def GetMatches(self, document, document_id, entity_types, auto_detect=True, allow_overlap=False, protect_tags=True, max_tokens=5, tokenize_characters=False, ignore_blacklist=False):
+		document_id = str(document_id)
 		entity_types = set(entity_types)
 		self.document_types_lock.acquire()
 		if document_id in self.document_types:
