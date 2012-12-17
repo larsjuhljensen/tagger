@@ -140,7 +140,7 @@ const unsigned char compare_type[256] = {
 
 inline size_t StringHash::operator()(const char* s) const
 {
-	size_t h = 0;
+	size_t h = *s;
 	while (*(++s)) 
 		h = ((h<<5)+h)+*s;
 	return h;
