@@ -314,10 +314,10 @@ bool ScoreBatchHandler::validate_pair(int type1, int type2)
 		return type1 == 4932;
 	}
 	else if (type1 == -27) {
-		return type2 == -1 || type2 == -2;
+		return type2 == -2;
 	}
 	else if (type2 == -27) {
-		return type1 == -1 || type1 == -2;
+		return type1 == -2;
 	}
 	else if (type1 == -26) {
 		return type2 >= 0 || type2 == -25;
@@ -331,14 +331,11 @@ bool ScoreBatchHandler::validate_pair(int type1, int type2)
 	else if (type2 >= -25 && type2 <= -21) {
 		return type1 >= 0;
 	}
-	else if (type1 == -2) {
-		return type2 == -2 || type2 == -1;
-	}
-	else if (type2 == -2) {
-		return type1 == -2 || type1 == -1;
-	}
-	else if (type1 == -1 || type2 == -1) {
+	else if (type1 == -1) {
 		return type2 >= -1;
+	}
+	else if (type2 == -1) {
+		return type1 >= -1;
 	}
 	else if (type1 >= 0 || type2 >= 0) {
 		return type1 == type2;

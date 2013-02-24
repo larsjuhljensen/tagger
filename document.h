@@ -432,7 +432,10 @@ Document* TsvDocumentReader::read_document()
 				valid = false;
 			}
 		}
-		else if (!line) {
+		else if (line) {
+			free(line);
+		}
+		else {
 			delete document;
 			document = NULL;
 			valid = true;

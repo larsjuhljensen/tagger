@@ -48,6 +48,11 @@ class Match
 			this->entities = NULL;
 		}
 		
+		~Match()
+		{
+			free(this->entities);
+		}
+		
 };
 
 class Matches: public vector<Match*> {
