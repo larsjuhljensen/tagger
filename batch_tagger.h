@@ -23,6 +23,7 @@ class DocumentTagger : public Tagger
 		~DocumentTagger();
 		
 	public:
+		void load_groups(int type, const char* groups_filename);
 		void load_groups(EntityTypeMap* entities_type_map, const char* groups_filename);
 		void load_groups(const char* entities_filename, const char* groups_filename);
 		
@@ -52,6 +53,11 @@ DocumentTagger::DocumentTagger()
 
 DocumentTagger::~DocumentTagger()
 {
+}
+
+void DocumentTagger::load_groups(int type, const char* groups_filename)
+{
+	this->match_handler = new GroupMatchHandler(type, groups_filename);
 }
 
 void DocumentTagger::load_groups(EntityTypeMap* entity_type_map, const char* groups_filename)

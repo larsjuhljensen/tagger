@@ -3,7 +3,7 @@ CFLAGS = -fpic -Wall -O3
 LFLAGS = -fpic -shared -lboost_regex
 PYTHON = -I/usr/include/python
 
-all: tagger_swig.py _tagger_swig.so libtagger.so libtagger.a tagcorpus cleandict species
+all: tagger_swig.py _tagger_swig.so libtagger.so libtagger.a tagcorpus cleandict organisms species spring
 	
 clean:
 	rm -f tagger_swig.py tagcorpus species spring cleandict *.pyc *_wrap.cxx *.o *.a *.so
@@ -43,8 +43,5 @@ tagcorpus: tagcorpus.cxx acronyms.h document.h file.h hash.h mutex.h thread.h ma
 cleandict: cleandict.cxx acronyms.h file.h hash.h tagger.h tagger_core.h tagger_types.h
 	$(CC) $(CFLAGS) -lboost_regex -pthread -o $@ $< -lm
 
-species: species.cxx acronyms.h document.h file.h hash.h match_handlers.h base_handlers.h batch_tagger.h tagger.h tagger_types.h tagger_core.h tokens.h
-	$(CC) $(CFLAGS) -lboost_regex -o $@ $< -lm
-
-spring: spring.cxx acronyms.h document.h file.h hash.h match_handlers.h base_handlers.h batch_tagger.h tagger.h tagger_types.h tagger_core.h tokens.h
+%: %.cxx acronyms.h document.h file.h hash.h match_handlers.h base_handlers.h batch_tagger.h tagger.h tagger_types.h tagger_core.h tokens.h
 	$(CC) $(CFLAGS) -lboost_regex -o $@ $< -lm

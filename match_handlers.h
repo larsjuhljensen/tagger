@@ -41,13 +41,16 @@ class DisambiguationMatchHandler : public IMatchHandler
 class GroupMatchHandler : public DisambiguationMatchHandler
 {
 	private:
+		int type;
 		EntityTypeMap* group_type_map;
 		unordered_map<SERIAL, SERIALS> entity_group_map;
 	
 	public:
+		GroupMatchHandler(int type, const char* groups_filename);
 		GroupMatchHandler(EntityTypeMap* group_type_map, const char* groups_filename);
 	
 	public:
+		void load_groups(const char* groups_filename);
 		virtual void process(Matches& matches);
 };
 
@@ -119,9 +122,22 @@ void DisambiguationMatchHandler::process(Matches& matches)
 
 ////////////////////////////////////////////////////////////////////////////////
 
+GroupMatchHandler::GroupMatchHandler(int type, const char* groups_filename)
+{
+	this->type = type;
+	this->group_type_map = NULL;
+	this->load_groups(groups_filename);
+}
+
 GroupMatchHandler::GroupMatchHandler(EntityTypeMap* group_type_map, const char* groups_filename)
 {
+	this->type = 0;
 	this->group_type_map = group_type_map;
+	this->load_groups(groups_filename);
+}
+
+void GroupMatchHandler::load_groups(const char* groups_filename)
+{
 	InputFile groups_file(groups_filename);
 	while (true) {
 		vector<char *> fields = groups_file.get_fields();
@@ -177,7 +193,12 @@ void GroupMatchHandler::process(Matches& matches)
 			memcpy(new_entities, (*match_it)->entities, old_size*sizeof(Entity));
 			for (unsigned int i = 0; i < common_groups.size(); i++) {
 				new_entities[old_size+i].id.serial = common_groups[i];
-				new_entities[old_size+i].type = (*this->group_type_map)[common_groups[i]];
+				if (this->group_type_map != NULL) {
+					new_entities[old_size+i].type = (*this->group_type_map)[common_groups[i]];
+				}
+				else {
+					new_entities[old_size+i].type = this->type;
+				}
 			}
 			delete (*match_it)->entities;
 			(*match_it)->entities = new_entities;
