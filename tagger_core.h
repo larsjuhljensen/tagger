@@ -529,6 +529,7 @@ void Tagger::find_matches(Matches& matches, Acronyms& acronyms, Tokens& tokens, 
 				search2 = this->names.find(name);
 				if (search2 != this->names.end()) {
 					this->trim_boundaries(document, start, stop);
+					name = document+start;
 					document[end] = replaced;
 					end = stop+1;
 					replaced = document[end];
