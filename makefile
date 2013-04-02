@@ -4,9 +4,9 @@ LFLAGS = -fpic -shared -lboost_regex
 PYTHON = -I/usr/include/python
 
 all: tagger_swig.py _tagger_swig.so libtagger.so libtagger.a tagcorpus cleandict organisms species spring
-	
+
 clean:
-	rm -f tagger_swig.py tagcorpus species spring cleandict *.pyc *_wrap.cxx *.o *.a *.so
+	rm -f tagger_swig.py tagcorpus organisms species spring cleandict *.pyc *_wrap.cxx *.o *.a *.so
 
 #
 # Make C-style Python interpreter wrapper C-code layer.
@@ -37,11 +37,11 @@ libtagger.so: tagger.o
 libtagger.a: tagger.o
 	ar -rfs -o $@ $<
 
-tagcorpus: tagcorpus.cxx acronyms.h document.h file.h hash.h mutex.h thread.h match_handlers.h base_handlers.h meta_handlers.h print_handlers.h score_handlers.h batch_tagger.h threaded_batch_tagger.h tagger.h tagger_types.h tagger_core.h tokens.h
+tagcorpus: tagcorpus.cxx acronyms.h document.h file.h hash.h mutex.h thread.h match_handlers.h base_handlers.h meta_handlers.h print_handlers.h score_handlers.h batch_tagger.h threaded_batch_tagger.h tagger.h tagger_core.h tagger_types.h tightvector.h tokens.h
 	$(CC) $(CFLAGS) -lboost_regex -pthread -o $@ $< -lm
 
 cleandict: cleandict.cxx acronyms.h file.h hash.h tagger.h tagger_core.h tagger_types.h
 	$(CC) $(CFLAGS) -lboost_regex -pthread -o $@ $< -lm
 
-%: %.cxx acronyms.h document.h file.h hash.h match_handlers.h base_handlers.h batch_tagger.h tagger.h tagger_types.h tagger_core.h tokens.h
+%: %.cxx acronyms.h document.h file.h hash.h mutex.h match_handlers.h base_handlers.h batch_tagger.h tagger.h tagger_core.h tagger_types.h tightvector.h tokens.h
 	$(CC) $(CFLAGS) -lboost_regex -o $@ $< -lm
