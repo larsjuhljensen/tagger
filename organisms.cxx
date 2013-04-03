@@ -34,8 +34,8 @@ int main (int argc, char *argv[])
 	DirectoryDocumentReader document_reader = DirectoryDocumentReader(argv[1]);
 	GetMatchesParams params;
 	params.auto_detect = false;
-	params.find_acronyms = false;
 	params.entity_types.push_back(-2);
+	params.max_tokens = 6;
 	SpeciesHandler batch_handler;
 	
 	batch_tagger.process(&document_reader, params, &batch_handler);	
