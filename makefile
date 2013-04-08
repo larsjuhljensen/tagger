@@ -3,10 +3,10 @@ CFLAGS = -fpic -Wall -O3
 LFLAGS = -fpic -shared -lboost_regex
 PYTHON = -I/usr/include/python
 
-all: tagger_swig.py _tagger_swig.so libtagger.so libtagger.a tagcorpus cleandict organisms species spring
+all: tagger_swig.py _tagger_swig.so libtagger.so libtagger.a tagcorpus cleandict environments organisms species spring
 
 clean:
-	rm -f tagger_swig.py tagcorpus organisms species spring cleandict *.pyc *_wrap.cxx *.o *.a *.so
+	rm -f tagger_swig.py tagcorpus cleandict environments organisms species spring *.pyc *_wrap.cxx *.o *.a *.so
 
 #
 # Make C-style Python interpreter wrapper C-code layer.

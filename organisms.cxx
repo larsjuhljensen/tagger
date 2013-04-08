@@ -4,7 +4,7 @@
 
 using namespace std;
 
-class SpeciesHandler : public BatchHandler
+class SimpleBatchHandler : public BatchHandler
 {
 	public:
 		void on_match(Document& document, Match* match)
@@ -36,7 +36,7 @@ int main (int argc, char *argv[])
 	params.auto_detect = false;
 	params.entity_types.push_back(-2);
 	params.max_tokens = 6;
-	SpeciesHandler batch_handler;
+	SimpleBatchHandler batch_handler;
 	
 	batch_tagger.process(&document_reader, params, &batch_handler);	
 }

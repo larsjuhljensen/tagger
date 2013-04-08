@@ -27,8 +27,9 @@ int main (int argc, char *argv[])
 	assert(argc >= 2);
 	
 	BatchTagger batch_tagger;
-	batch_tagger.load_names(-2, "species_names.tsv");
-	batch_tagger.load_global("species_global.tsv");
+	batch_tagger.load_names(-27, "environments_names.tsv");
+	batch_tagger.load_groups(-27, "environments_groups.tsv");
+	batch_tagger.load_global("environments_global.tsv");
 	
 	DirectoryDocumentReader document_reader = DirectoryDocumentReader(argv[1]);
 	GetMatchesParams params;
