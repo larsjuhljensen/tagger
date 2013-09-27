@@ -124,15 +124,9 @@ class CleaningTagger : public Tagger {
 					}
 					
 					// Throw away very short names.
-					if (strlen(name) <= 2) {
-						if (type > 0) {
-							ffilter << "SHORT-PROTEIN\t" << name << "\t" << type << "\t" << serial << "\t(" << count << ")" << endl;
-							this->remove_name(serial, name);
-						}
-						else {
-							ffilter << "SHORT-CHEMICAL\t" << name << "\t" << type << "\t" << serial << "\t(" << count << ")" << endl;
-							this->remove_name(serial, name);
-						}
+					if (strlen(name) < 2) {
+						ffilter << "SHORT-NAME\t" << name << "\t" << type << "\t" << serial << "\t(" << count << ")" << endl;
+						this->remove_name(serial, name);
 					}
 					
 					// WIKIPEDIA AND ONTOLOGIES.
