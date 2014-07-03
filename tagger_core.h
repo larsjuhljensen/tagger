@@ -26,7 +26,7 @@ void GetMatchesParams::add_entity_type(int entity_type)
 	this->entity_types.push_back(entity_type);
 }
 
-Tagger::Tagger(bool serials_only)
+Tagger::Tagger(bool serials_only, const char* pattern)
 {
 	// -------------------------------------------------------------------------
 	// CAUTION !!!
@@ -35,12 +35,17 @@ Tagger::Tagger(bool serials_only)
 	// expression so please do not alter this expression at any point without
 	// safely storing it first.
 	// -------------------------------------------------------------------------
-	string pattern;
-	pattern += "\\A&|\\A(.{0,2}|.[ \t\r\n-]+.|[^A-Za-z]*([ \t\r\n]|\\Z)|[ACDEFGHIKLMNPQRSTVWY]-?[0-9]{1,4}|[CJnsXx][ -]*[0-9.-]+|[0-9]{1,4}[A-Za-z]|[0-9.-]+[ -]*[cmnp]?[AgLlMmSsVXx][0-9-]*)\\Z";
-	pattern += "|\\A([DGNSTdgnst]o|[Aa][nst]?|[Aa]nd|[Aa]re|[Bb][ey]|[Bb]ut|[Cc]an|[Dd]id|[Ff]or|[Hh]a[ds]|[Hh]ave]|[Ii][fnst]|[Ii]ts|[Oo][fnr]|[Tt]he|[Tt]his|[Ww]as|[Ww]ere)[ \t\r\n]";
-	pattern += "|[ \t\r\n]([dgs]o|are|but|can|did|et|ha[ds]|have|i[fst]|its|this|was|were)[ \t\r\n]";
-	pattern += "|[ \t\r\n]([dgnst]o|a[nst]?|and|are|b[ey]|but|can|did|et|for|ha[ds]|have|i[fnst]|its|o[fnr]|the|this|was|were)\\Z";
-	this->re_stop = regex(pattern.c_str());
+	if (pattern != NULL) {
+		this->re_stop = regex(pattern);
+	}
+	else {
+		this->re_stop = regex(
+			"\\A&|\\A(.{0,2}|.[ \t\r\n-]+.|[^A-Za-z]*([ \t\r\n]|\\Z)|[ACDEFGHIKLMNPQRSTVWY]-?[0-9]{1,4}|[CJnsXx][ -]*[0-9.-]+|[0-9]{1,4}[A-Za-z]|[0-9.-]+[ -]*[cmnp]?[AgLlMmSsVXx][0-9-]*)\\Z"
+			"|\\A([DGNSTdgnst]o|[Aa][nst]?|[Aa]nd|[Aa]re|[Bb][ey]|[Bb]ut|[Cc]an|[Dd]id|[Ff]or|[Hh]a[ds]|[Hh]ave]|[Ii][fnst]|[Ii]ts|[Oo][fnr]|[Tt]he|[Tt]his|[Ww]as|[Ww]ere)[ \t\r\n]"
+			"|[ \t\r\n]([dgs]o|are|but|can|did|et|ha[ds]|have|i[fst]|its|this|was|were)[ \t\r\n]"
+			"|[ \t\r\n]([dgnst]o|a[nst]?|and|are|b[ey]|but|can|did|et|for|ha[ds]|have|i[fnst]|its|o[fnr]|the|this|was|were)\\Z"
+		);
+	}
 	this->re_html = regex("<!DOCTYPE[ \t\r\n][^>]*?>|<!--.*?-->|<(head|pre|script)[> \t\r\n].*?</\\1[ \t\r\n]*>|</?[a-z0-9_]+(([ \t\r\n]+[a-z0-9_:-]+([ \t\r\n]*=[ \t\r\n]*(\".*?\"|'.*?'|[^\"'> \t\r\n]+))?)+[ \t\r\n]*|[ \t\r\n]*)/?>", boost::regex::icase);
 	this->re_reflect = regex("\\A(<span [^>]*?startReflectPopupTimer.*?>(.*?)</span>|<div [^>]*?reflect_.*?>.*?</div>\n?|</body>|</html>)", boost::regex::icase);
 	this->serials_only = serials_only;

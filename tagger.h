@@ -45,7 +45,7 @@ class Tagger
 		boost::regex re_reflect;
 		
 	public:
-		Tagger(bool serials_only);
+		Tagger(bool serials_only, const char* pattern = NULL);
 		~Tagger();
 		
 	public:
