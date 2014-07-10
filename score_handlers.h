@@ -301,11 +301,23 @@ void ScoreBatchHandler::on_batch_end()
 
 bool ScoreBatchHandler::validate_pair(int type1, int type2)
 {
-	if (type1 == -30) {
+	if (type1 == -31) {
 		return type2 == -26;
 	}
-	else if (type2 == -30) {
+	else if (type2 == -31) {
 		return type1 == -26;
+	}
+	else if (type1 == -30) {
+		return type2 == 9606;
+	}
+	else if (type2 == -30) {
+		return type1 == 9606;
+	}
+	else if (type1 == -29) {
+		return type2 == 4896;
+	}
+	else if (type2 == -29) {
+		return type1 == 4896;
 	}
 	else if (type1 == -28) {
 		return type2 == 4932;

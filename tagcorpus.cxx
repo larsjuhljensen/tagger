@@ -59,10 +59,10 @@ int main (int argc, char *argv[])
 	params.entity_types.push_back(-25);  // BTO tissues.
 	params.entity_types.push_back(-26);  // DOID diseases.
 	params.entity_types.push_back(-27);  // ENVO environments.
-	params.entity_types.push_back(-28);  // APO observable phenotype.
-	params.entity_types.push_back(-29);  // APO other phenotype terms.
-	params.entity_types.push_back(-30);  // NBO behaviors.
-	params.entity_types.push_back(-31);  // ACT actions.
+	params.entity_types.push_back(-28);  // APO phenotypes.
+	params.entity_types.push_back(-29);  // FYPO phenotypes.
+	params.entity_types.push_back(-30);  // MPheno phenotypes.
+	params.entity_types.push_back(-31);  // NBO behaviors.
 	
 	#ifdef REFLECT_PROFILE
 	profile_print();
