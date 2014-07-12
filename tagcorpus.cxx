@@ -63,6 +63,8 @@ int main (int argc, char *argv[])
 	params.entity_types.push_back(-29);  // FYPO phenotypes.
 	params.entity_types.push_back(-30);  // MPheno phenotypes.
 	params.entity_types.push_back(-31);  // NBO behaviors.
+	params.entity_types.push_back(-32);
+	params.entity_types.push_back(-33);
 	
 	#ifdef REFLECT_PROFILE
 	profile_print();

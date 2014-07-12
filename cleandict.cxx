@@ -57,7 +57,7 @@ class CleaningTagger : public Tagger {
 			protected_types.insert(-3);
 			protected_types.insert(-21);
 			protected_types.insert(-22);
-			protected_types.insert(-23); // Because not _filter.tsv has not been made yet.
+			protected_types.insert(-23); // Because _filter.tsv has not been made yet.
 			protected_types.insert(-25);
 			protected_types.insert(-26);
 			protected_types.insert(-27);
@@ -65,6 +65,7 @@ class CleaningTagger : public Tagger {
 			protected_types.insert(-29);
 			protected_types.insert(-30);
 			protected_types.insert(-31);
+			protected_types.insert(-32);
 			
 			ofstream ffilter(filename_filtered);
 			
