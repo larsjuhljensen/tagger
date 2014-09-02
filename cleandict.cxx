@@ -61,11 +61,6 @@ class CleaningTagger : public Tagger {
 			protected_types.insert(-25);
 			protected_types.insert(-26);
 			protected_types.insert(-27);
-			protected_types.insert(-28);
-			protected_types.insert(-29);
-			protected_types.insert(-30);
-			protected_types.insert(-31);
-			protected_types.insert(-32);
 			
 			ofstream ffilter(filename_filtered);
 			
