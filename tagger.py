@@ -32,22 +32,22 @@ class Tagger:
 		self.document_types_lock = threading.Lock()
 		self.cpp_tagger     = tagger_swig.Tagger(False) # False: Using string dict., not serial dict.
 	
-	def LoadChangelog(self, file):
+	def load_changelog(self, file):
 		self.changelog_lock.acquire()
 		self.changelog_file = None
 		if os.path.exists(file):
 			for line in open(file):
 				tokens = line[:-1].split('\t')
 				if tokens[1] == 'AddName':
-					self.AddName(tokens[2], tokens[3], tokens[4])
+					self.add_name(tokens[2], tokens[3], tokens[4])
 				elif tokens[1] == 'AllowName':
-					self.AllowName(tokens[2], tokens[3])
+					self.allow_name(tokens[2], tokens[3])
 				elif tokens[1] == 'BlockName':
-					self.BlockName(tokens[2], tokens[3])
+					self.block_name(tokens[2], tokens[3])
 		self.changelog_file = file
 		self.changelog_lock.release()
 	
-	def SaveChangelog(self, *args):
+	def save_changelog(self, *args):
 		if self.changelog_file:
 			self.changelog_lock.acquire()
 			handle = open(self.changelog_file, 'a')
@@ -57,34 +57,34 @@ class Tagger:
 			handle.close()
 			self.changelog_lock.release()
 	
-	def LoadHeaders(self, file):
+	def load_headers(self, file):
 		if file.startswith("http://"):
 			self.script = "<script src=\"%s\" type=\"text/javascript\"></script>\n" % file
 		else:
 			self.script = open(file).read()
 			
-	def LoadGlobal(self, file):
+	def load_global(self, file):
 		if not os.path.exists(file):
 			raise IOError("File '%s' not found." % file)
 		self.cpp_tagger.load_global(file)
 		
-	def LoadLocal(self, file):
+	def load_local(self, file):
 		if not os.path.exists(file):
 			raise IOError("File '%s' not found." % file)
 		self.cpp_tagger.load_local(file)
 
-	def LoadNames(self, file1, file2):
+	def load_names(self, file1, file2):
 		if not os.path.exists(file1):
 			raise IOError("File '%s' not found." % file1)
 		if not os.path.exists(file2):
 			raise IOError("File '%s' not found." % file2)
 		self.cpp_tagger.load_names(file1, file2)
 	
-	def SetStyles(self, styles, types={}):
+	def set_styles(self, styles, types={}):
 		self.styles = styles
 		self.types = types
 	
-	def PostprocessDocument(self, uri, document):
+	def postprocess_document(self, uri, document):
 		if uri:
 			match_head_begin = self.re_head_begin.search(document)
 			if match_head_begin:
@@ -107,25 +107,25 @@ class Tagger:
 			document = ''.join((pre, self.script, post))
 		return document
 
-	def AddName(self, name, type, identifier, document_id=None):
-		if not self.CheckName(name, type, identifier):
-			self.cpp_tagger.add_name(name, int(type), identifier)
-			self.SaveChangelog('AddName', name, type, identifier)
+	def add_name(self, name, entity_type, entity_identifier, document_id=None):
+		if not self.check_name(name, entity_type, entity_identifier):
+			self.cpp_tagger.add_name(name, int(entity_type), entity_identifier)
+			self.save_changelog('AddName', name, entity_type, entity_identifier)
 		if document_id:
 			self.document_types_lock.acquire()
 			if document_id not in self.document_types:
 				self.document_types[document_id] = set()
-			self.document_types[document_id].add(int(type))
+			self.document_types[document_id].add(int(entity_type))
 			self.document_types_lock.release()
-			self.AllowName(name, document_id)
+			self.allow_name(name, document_id)
 		
-	def AllowName(self, name, document_id):
-		if self.IsBlocked(name, document_id):
+	def allow_name(self, name, document_id):
+		if self.is_blocked(name, document_id):
 			self.cpp_tagger.allow_block_name(name, document_id, False)
-			self.SaveChangelog('AllowName', name, document_id)
+			self.save_changelog('AllowName', name, document_id)
 		
-	def BlockName(self, name, document_id):
-		if not self.IsBlocked(name, document_id):
+	def block_name(self, name, document_id):
+		if not self.is_blocked(name, document_id):
 			self.cpp_tagger.allow_block_name(name, document_id, True)
 			self.blocked_documents_lock.acquire()
 			if name not in self.blocked_documents:
@@ -134,15 +134,15 @@ class Tagger:
 			if len(self.blocked_documents[name]) == 5:
 				self.cpp_tagger.allow_block_name(name, None, True)
 			self.blocked_documents_lock.release()
-			self.SaveChangelog('BlockName', name, document_id)
+			self.save_changelog('BlockName', name, document_id)
 		
-	def CheckName(self, name, type, identifier):
-		return self.cpp_tagger.check_name(name, int(type), identifier)
+	def check_name(self, name, entity_type, entity_identifier):
+		return self.cpp_tagger.check_name(name, int(entity_type), entity_identifier)
 		
-	def IsBlocked(self, name, document_id):
+	def is_blocked(self, name, document_id):
 		return self.cpp_tagger.is_blocked(document_id, name)
 	
-	def GetMatches(self, document, document_id, entity_types, auto_detect=True, allow_overlap=False, protect_tags=True, max_tokens=5, tokenize_characters=False, ignore_blacklist=False):
+	def get_matches(self, document, document_id, entity_types, auto_detect=True, allow_overlap=False, protect_tags=True, max_tokens=5, tokenize_characters=False, ignore_blacklist=False):
 		document_id = str(document_id)
 		entity_types = set(entity_types)
 		self.document_types_lock.acquire()
@@ -160,20 +160,19 @@ class Tagger:
 		params.ignore_blacklist = ignore_blacklist
 		return self.cpp_tagger.get_matches(document, document_id, params)
 		
-	def GetEntities(self, document, document_id, entity_types, auto_detect=True, allow_overlap=False, protect_tags=True, max_tokens=5, tokenize_characters=False, ignore_blacklist=False, format='xml'):
+	def get_entities(self, document, document_id, entity_types, auto_detect=True, allow_overlap=False, protect_tags=True, max_tokens=5, tokenize_characters=False, ignore_blacklist=False, format='xml'):
 		if format == None:
 			format = 'xml'
 		format = format.lower()
-		matches = self.GetMatches(document, document_id, entity_types, auto_detect, allow_overlap, protect_tags, max_tokens, tokenize_characters, ignore_blacklist)
+		matches = self.get_matches(document, document_id, entity_types, auto_detect, allow_overlap, protect_tags, max_tokens, tokenize_characters, ignore_blacklist)
 		doc = []
 		if format == 'xml':
 			uniq = {}
 			for match in matches:
-				if not match[2]:
-					continue
-				text = document[match[0]:match[1]+1]
-				if text not in uniq:
-					uniq[text] = []
+				if match[2] != None:
+					text = document[match[0]:match[1]+1]
+					if text not in uniq:
+						uniq[text] = []
 				uniq[text].append(match)
 			doc.append('<?xml version="1.0" encoding="UTF-8"?>')
 			doc.append('<GetEntitiesResponse xmlns="Reflect" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">')
@@ -185,24 +184,23 @@ class Tagger:
 				doc.append('<name xsi:type="xsd:string">%s</name>' % xml.sax.saxutils.escape(text))
 				doc.append('<count xsi:type="xsd:int">%i</count>' % len(matches))
 				doc.append('<entities>')
-				for type, identifier in match[2]:
+				for entity_type, entity_identifier in match[2]:
 					doc.append('<entity>')
-					doc.append('<type xsi:type="xsd:int">%i</type>' % type)
-					doc.append('<identifier xsi:type="xsd:string">%s</identifier>' % identifier)
+					doc.append('<type xsi:type="xsd:int">%i</type>' % entity_type)
+					doc.append('<identifier xsi:type="xsd:string">%s</identifier>' % entity_identifier)
 					doc.append('</entity>')
 				doc.append('</entities>')
 				doc.append('</item>')
 			doc.append('</items>')
 			doc.append('</GetEntitiesResponse>')
 			doc = ''.join(doc)
-			
 		else:
 			uniq = {}
 			for match in matches:
 				text = document[match[0]:match[1]+1]
 				if match[2] != None:
-					for type, identifier in match[2]:
-						key = (text, type, str(identifier))
+					for entity_type, entity_identifier in match[2]:
+						key = (text, entity_type, str(entity_identifier))
 						if key not in uniq:
 							uniq[key] = 1
 			sep = '\t'
@@ -212,22 +210,22 @@ class Tagger:
 				sep = ','
 			elif format == 'ssv':
 				sep = ';'
-			for text, type, identifier in uniq:
+			for text, entity_type, entity_identifier in uniq:
 				if sep in text:
 					text = '"' + text + '"'
-				if sep in identifier:
-					identifier = '"' + identifier + '"'
-				doc.append('%s%s%i%s%s' % (text, sep, type, sep, identifier))
+				if sep in entity_identifier:
+					entity_identifier = '"' + entity_identifier + '"'
+				doc.append('%s%s%i%s%s' % (text, sep, entity_type, sep, entity_identifier))
 			doc = '\n'.join(doc)
 		return doc
 	
-	def GetHTML(self, document, document_id, entity_types, auto_detect=True, allow_overlap=False, protect_tags=True, max_tokens=5, tokenize_characters=False, ignore_blacklist=False, html_footer=''):
+	def get_html(self, document, document_id, entity_types, auto_detect=True, allow_overlap=False, protect_tags=True, max_tokens=5, tokenize_characters=False, ignore_blacklist=False, html_footer=''):
+		matches = self.get_matches(document, document_id, entity_types, auto_detect, allow_overlap, protect_tags, max_tokens, tokenize_characters, ignore_blacklist)
+		matches.sort()
 		doc = []
 		i = 0
 		all_types = set()
 		divs = {}
-		matches = self.GetMatches(document, document_id, entity_types, auto_detect, allow_overlap, protect_tags, max_tokens, tokenize_characters, ignore_blacklist)
-		matches.sort()
 		priority_type_rule = {}
 		for priority in self.types:
 			priority_type_rule[priority] = lambda x: eval(self.types[priority])
@@ -239,17 +237,17 @@ class Tagger:
 				text = document[match[0]:match[1]+1]
 				str = []
 				match_types = set()
-				for type, id in match[2]:
-					str.append('%i.%s' % (type, id))
-					all_types.add(type)
-					match_types.add(type)
+				for entity_type, entity_identifier in match[2]:
+					str.append('%i.%s' % (entity_type, entity_identifier))
+					all_types.add(entity_type)
+					match_types.add(entity_type)
 				reflect_style = ''
 				for priority in sorted(self.styles.iterkeys()):
 					if priority not in self.types:
 						reflect_style = self.styles[priority]
 						break
-					for type in match_types:
-						if priority_type_rule[priority](type):
+					for entity_type in match_types:
+						if priority_type_rule[priority](entity_type):
 							reflect_style = self.styles[priority]
 							break
 					if reflect_style:
@@ -275,14 +273,53 @@ class Tagger:
 			doc.append('  <span name="%s">%s</span>\n' % (key, str))
 		doc.append('</div>\n')
 		doc.append('<div style="display: none;" class="reflect_entity_types">\n')
-		for type in all_types:
-			doc.append('  <span>%i</span>\n' % type)
+		for entity_type in all_types:
+			doc.append('  <span>%i</span>\n' % entity_type)
 		doc.append('</div>\n')
 		doc.append('<div style="display: none;" id="reflect_div_doi">%s</div>\n' % document_id)
 		doc.append('<div name="reflect_v2" style="display: none;"></div>\n')
 		doc.append(html_footer)
 		doc.append('</body>\n</html>\n')
-		return self.PostprocessDocument(document_id, ''.join(doc))
+		return self.postprocess_document(document_id, ''.join(doc))
 	
-	def ResolveName(self, name):
+	def get_jsonld(self, document, document_id, annotation_index, entity_types, auto_detect=True, allow_overlap=False, protect_tags=True, max_tokens=5, tokenize_characters=False, ignore_blacklist=False):
+		matches = self.get_matches(document, document_id, entity_types, auto_detect, allow_overlap, protect_tags, max_tokens, tokenize_characters, ignore_blacklist)
+		doc = []
+		doc.append('"@context":"http://nlplab.org/ns/restoa-context-20150307.json"')
+		if annotation_index == None:
+			doc.append('"@id":"%s/annotations/"' % document_id)
+			graph = []
+			i = 0
+			for match in matches:
+				if match[2] != None:
+					graph.append('{"@id":"%s/annotations/%d"' % (document_id, i))
+					graph.append('"target":"%s#char=%d,%d"' % (document_id, match[0], match[1]+1))
+					body = []
+					for entity_type, entity_identifier in match[2]:
+						body.append('{"@id":"%s"}' % entity_identifier)
+					if len(body) == 1:
+						graph.append('"body":%s}' % body[0])
+					else:
+						graph.append('"body":[%s]}' % ','.join(body))
+					i += 1
+			doc.append('"@graph":[%s]' % ','.join(graph))
+		else:
+			doc.append('"@id":"%s/annotations/%d"' % (document_id, annotation_index))
+			i = 0;
+			for match in matches:
+				if match[2] != None:
+					if i == int(annotation_index):
+						doc.append('"target":"%s#char=%d,%d"' % (document_id, match[0], match[1]+1))
+						body = []
+						for entity_type, entity_identifier in match[2]:
+							body.append('{"@id":"%s"}' % entity_identifier)
+						if len(body) == 1:
+							doc.append('"body":%s' % body[0])
+						else:
+							doc.append('"body":[%s]' % ','.join(body))
+						break
+					i += 1
+		return '{%s}' % ','.join(doc)
+	
+	def resolve_name(self, name):
 		return self.cpp_tagger.resolve_name(name)
