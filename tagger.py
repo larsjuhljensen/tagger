@@ -1,11 +1,12 @@
+import datetime
+import hashlib
+import json
 import os
 import re
 import sys
-import datetime
-import time
 import tempfile
-import hashlib
 import threading
+import time
 import urlparse
 import xml.sax.saxutils
 
@@ -284,42 +285,37 @@ class Tagger:
 	
 	def get_jsonld(self, document, document_id, annotation_index, entity_types, auto_detect=True, allow_overlap=False, protect_tags=True, max_tokens=5, tokenize_characters=False, ignore_blacklist=False):
 		matches = self.get_matches(document, document_id, entity_types, auto_detect, allow_overlap, protect_tags, max_tokens, tokenize_characters, ignore_blacklist)
-		doc = []
-		doc.append('"@context":"http://nlplab.org/ns/restoa-context-20150307.json"')
+		data = {}
+		data["@context"] = "http://nlplab.org/ns/restoa-context-20150307.json"
 		if annotation_index == None:
-			doc.append('"@id":"%s/annotations/"' % document_id)
-			graph = []
+			data["@id"] = "%s/annotations/" % document_id
+			data["@graph"] = []
 			i = 0
 			for match in matches:
 				if match[2] != None:
-					graph.append('{"@id":"%s/annotations/%d"' % (document_id, i))
-					graph.append('"target":"%s#char=%d,%d"' % (document_id, match[0], match[1]+1))
-					body = []
-					for entity_type, entity_identifier in match[2]:
-						body.append('{"@id":"%s"}' % entity_identifier)
-					if len(body) == 1:
-						graph.append('"body":%s}' % body[0])
+					annotation = {}
+					annotation["@id"] = "%s/annotations/%d" % (document_id, i)
+					annotation["target"] = "%s#char=%d,%d" % (document_id, match[0], match[1]+1)
+					if len(match[2]) == 1:
+						annotation["body"] = {"@id" : match[2][0][1]}
 					else:
-						graph.append('"body":[%s]}' % ','.join(body))
+						annotation["body"] = [{"@id" : entity_identifier} for entity_type, entity_identifier in match[2]]
+					data["@graph"].append(annotation)
 					i += 1
-			doc.append('"@graph":[%s]' % ','.join(graph))
 		else:
-			doc.append('"@id":"%s/annotations/%d"' % (document_id, annotation_index))
+			data["@id"] = "%s/annotations/%d" % (document_id, annotation_index)
 			i = 0;
 			for match in matches:
 				if match[2] != None:
 					if i == int(annotation_index):
-						doc.append('"target":"%s#char=%d,%d"' % (document_id, match[0], match[1]+1))
-						body = []
-						for entity_type, entity_identifier in match[2]:
-							body.append('{"@id":"%s"}' % entity_identifier)
-						if len(body) == 1:
-							doc.append('"body":%s' % body[0])
+						data["target"] = "%s#char=%d,%d" % (document_id, match[0], match[1]+1)
+						if len(match[2]) == 1:
+							data["body"] = {"@id" : match[2][0][1]}
 						else:
-							doc.append('"body":[%s]' % ','.join(body))
+							data["body"] = [{"@id" : entity_identifier} for entity_type, entity_identifier in match[2]]
 						break
 					i += 1
-		return '{%s}' % ','.join(doc)
+		return json.dumps(data, separators=(',',':'), sort_keys=True)
 	
 	def resolve_name(self, name):
 		return self.cpp_tagger.resolve_name(name)
