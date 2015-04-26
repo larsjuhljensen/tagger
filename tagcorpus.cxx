@@ -36,15 +36,25 @@ int main (int argc, char *argv[])
 	}
 	cerr << " done." << endl;
 	
-	if (argc < 11) {
+	if (argc < 8) {
 		batch_handler.push_back(new PrintBatchHandler(stdout));
 	}
-	else if (argc < 13) {
+	else if (argc == 11) {
 		batch_handler.push_back(new ScoreBatchHandler(stdout, entity_type_map, atof(argv[7]), atof(argv[8]), atof(argv[9]), atof(argv[10])));
 	}
-	else {
+	else if (argc == 12) {
+		batch_handler.push_back(new SelectiveScoreBatchHandler(stdout, entity_type_map, atof(argv[7]), atof(argv[8]), atof(argv[9]), atof(argv[10]), argv[11]));
+	}
+	else if (argc == 13) {
 		batch_handler.push_back(new PrintBatchHandler(argv[11]));
 		batch_handler.push_back(new ScoreBatchHandler(argv[12], entity_type_map, atof(argv[7]), atof(argv[8]), atof(argv[9]), atof(argv[10])));
+	}
+	else if (argc == 14) {
+		batch_handler.push_back(new PrintBatchHandler(argv[12]));
+		batch_handler.push_back(new SelectiveScoreBatchHandler(argv[13], entity_type_map, atof(argv[7]), atof(argv[8]), atof(argv[9]), atof(argv[10]), argv[11]));
+	}
+	else {
+		cerr << " wrong number of arguments." << endl;
 	}
 	
 	params.auto_detect = true;

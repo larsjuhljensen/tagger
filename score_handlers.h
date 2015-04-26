@@ -13,6 +13,8 @@ typedef unordered_set<SERIAL> ENTITY_SET;
 typedef unordered_set<SERIAL_PAIR> PAIR_SET;
 typedef unordered_map<SERIAL, unordered_map<int, double> > ENTITY_TYPE_SCORE_MAP;
 typedef unordered_map<int, unordered_map<int, double> > TYPE_TYPE_SCORE_MAP;
+typedef unordered_set<int> TYPE_SET;
+typedef unordered_map<int, TYPE_SET > TYPE_TYPE_SET;
 
 class PairScoreMap : public unordered_map<SERIAL_PAIR, SCORE>
 {
@@ -64,6 +66,19 @@ class ScoreBatchHandler : public BatchHandler, protected OutputFile, public Mute
 	public:
 		IDocumentHandler* create_document_handler();
 		void on_batch_end();
+		virtual bool validate_pair(int type1, int type2);
+};
+
+class SelectiveScoreBatchHandler : public ScoreBatchHandler
+{
+	public:
+		TYPE_TYPE_SET valid_type_pairs;
+		
+	public:
+		SelectiveScoreBatchHandler(FILE* file, EntityTypeMap* entity_type_map, SCORE document_weight, SCORE paragraph_weight, SCORE sentence_weight, SCORE factor_exponent, const char* valid_type_pairs_filename);
+		SelectiveScoreBatchHandler(const char* filename, EntityTypeMap* entity_type_map, SCORE document_weight, SCORE paragraph_weight, SCORE sentence_weight, SCORE factor_exponent, const char* valid_type_pairs_filename);
+		
+	public:
 		virtual bool validate_pair(int type1, int type2);
 };
 
@@ -301,6 +316,77 @@ void ScoreBatchHandler::on_batch_end()
 
 bool ScoreBatchHandler::validate_pair(int type1, int type2)
 {
+	return true;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+SelectiveScoreBatchHandler::SelectiveScoreBatchHandler(FILE* file, EntityTypeMap* entity_type_map, SCORE document_weight, SCORE paragraph_weight, SCORE sentence_weight, SCORE factor_exponent, const char* valid_type_pairs_filename)
+ : ScoreBatchHandler(file, entity_type_map, document_weight, paragraph_weight, sentence_weight, factor_exponent)
+{
+	InputFile valid_type_pairs_file(valid_type_pairs_filename);
+	while (true) {
+		vector<char *> fields = valid_type_pairs_file.get_fields();
+		int size = fields.size();
+		if (size == 0) {
+			break;
+		}
+		if (size >= 2) {
+			int type1 = atoi(fields[0]);
+			int type2 = atoi(fields[1]);
+			if (this->valid_type_pairs.find(type1) == this->valid_type_pairs.end()) {
+				this->valid_type_pairs[type1] = TYPE_SET();
+			}
+			this->valid_type_pairs[type1].insert(type2);
+			if (this->valid_type_pairs.find(type2) == this->valid_type_pairs.end()) {
+				this->valid_type_pairs[type2] = TYPE_SET();
+			}
+			this->valid_type_pairs[type2].insert(type1);
+		}
+		for (vector<char*>::iterator it = fields.begin(); it != fields.end(); it++) {
+			delete *it;
+		}
+	}
+}
+
+SelectiveScoreBatchHandler::SelectiveScoreBatchHandler(const char* filename, EntityTypeMap* entity_type_map, SCORE document_weight, SCORE paragraph_weight, SCORE sentence_weight, SCORE factor_exponent, const char* valid_type_pairs_filename)
+ : ScoreBatchHandler(filename, entity_type_map, document_weight, paragraph_weight, sentence_weight, factor_exponent)
+{
+	InputFile valid_type_pairs_file(valid_type_pairs_filename);
+	while (true) {
+		vector<char *> fields = valid_type_pairs_file.get_fields();
+		int size = fields.size();
+		if (size == 0) {
+			break;
+		}
+		if (size >= 2) {
+			int type1 = atoi(fields[0]);
+			int type2 = atoi(fields[1]);
+			if (this->valid_type_pairs.find(type1) == this->valid_type_pairs.end()) {
+				this->valid_type_pairs[type1] = TYPE_SET();
+			}
+			this->valid_type_pairs[type1].insert(type2);
+			if (this->valid_type_pairs.find(type2) == this->valid_type_pairs.end()) {
+				this->valid_type_pairs[type2] = TYPE_SET();
+			}
+			this->valid_type_pairs[type2].insert(type1);
+		}
+		for (vector<char*>::iterator it = fields.begin(); it != fields.end(); it++) {
+			delete *it;
+		}
+	}
+}
+
+bool SelectiveScoreBatchHandler::validate_pair(int type1, int type2)
+{
+	TYPE_TYPE_SET::iterator it1 = this->valid_type_pairs.find(type1);
+	if (it1 == this->valid_type_pairs.end()) {
+		return false;
+	}
+	else {
+		return it1->second.find(type2) != it1->second.end();
+	}
+	/*
 	if (type1 == -32 || type1 == -33) {
 		return type2 == 7227;
 	}
@@ -361,6 +447,7 @@ bool ScoreBatchHandler::validate_pair(int type1, int type2)
 	else {
 		return false;
 	}
+	*/
 }
 
 #endif
