@@ -386,68 +386,6 @@ bool SelectiveScoreBatchHandler::validate_pair(int type1, int type2)
 	else {
 		return it1->second.find(type2) != it1->second.end();
 	}
-	/*
-	if (type1 == -32 || type1 == -33) {
-		return type2 == 7227;
-	}
-	else if (type2 == -32 || type2 == -33) {
-		return type1 == 7227;
-	}
-	else if (type1 == -31) {
-		return type2 == -26;
-	}
-	else if (type2 == -31) {
-		return type1 == -26;
-	}
-	else if (type1 == -30) {
-		return type2 == 9606;
-	}
-	else if (type2 == -30) {
-		return type1 == 9606;
-	}
-	else if (type1 == -29) {
-		return type2 == 4896;
-	}
-	else if (type2 == -29) {
-		return type1 == 4896;
-	}
-	else if (type1 == -28) {
-		return type2 == 4932;
-	}
-	else if (type2 == -28) {
-		return type1 == 4932;
-	}
-	else if (type1 == -27) {
-		return type2 == -2;
-	}
-	else if (type2 == -27) {
-		return type1 == -2;
-	}
-	else if (type1 == -26) {
-		return type2 >= 0 || type2 == -25;
-	}
-	else if (type2 == -26) {
-		return type1 >= 0 || type1 == -25;
-	}
-	else if (type1 >= -25 && type1 <= -21) {
-		return type2 >= 0;
-	}
-	else if (type2 >= -25 && type2 <= -21) {
-		return type1 >= 0;
-	}
-	else if (type1 == -1) {
-		return type2 >= -1;
-	}
-	else if (type2 == -1) {
-		return type1 >= -1;
-	}
-	else if (type1 >= 0 || type2 >= 0) {
-		return type1 == type2;
-	}
-	else {
-		return false;
-	}
-	*/
 }
 
 #endif
