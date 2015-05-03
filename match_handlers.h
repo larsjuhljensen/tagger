@@ -5,6 +5,7 @@
 #include "file.h"
 #include "tagger_types.h"
 
+#include <climits>
 #include <vector>
 #include <tr1/unordered_map>
 
@@ -13,6 +14,7 @@ using namespace std::tr1;
 
 typedef vector<SERIAL> SERIALS;
 typedef unordered_set<SERIAL> ENTITY_SET;
+typedef unordered_map<int, int> TYPE_COUNT_MAP;
 
 class EntityTypeMap : public unordered_map<SERIAL, int>
 {
@@ -42,12 +44,12 @@ class GroupMatchHandler : public DisambiguationMatchHandler
 {
 	private:
 		int type;
-		EntityTypeMap* group_type_map;
+		EntityTypeMap* entity_type_map;
 		unordered_map<SERIAL, SERIALS> entity_group_map;
 	
 	public:
 		GroupMatchHandler(int type, const char* groups_filename);
-		GroupMatchHandler(EntityTypeMap* group_type_map, const char* groups_filename);
+		GroupMatchHandler(EntityTypeMap* entity_type_map, const char* groups_filename);
 	
 	public:
 		void load_groups(const char* groups_filename);
@@ -125,14 +127,14 @@ void DisambiguationMatchHandler::process(Matches& matches)
 GroupMatchHandler::GroupMatchHandler(int type, const char* groups_filename)
 {
 	this->type = type;
-	this->group_type_map = NULL;
+	this->entity_type_map = NULL;
 	this->load_groups(groups_filename);
 }
 
-GroupMatchHandler::GroupMatchHandler(EntityTypeMap* group_type_map, const char* groups_filename)
+GroupMatchHandler::GroupMatchHandler(EntityTypeMap* entity_type_map, const char* groups_filename)
 {
 	this->type = 0;
-	this->group_type_map = group_type_map;
+	this->entity_type_map = entity_type_map;
 	this->load_groups(groups_filename);
 }
 
@@ -164,50 +166,97 @@ void GroupMatchHandler::load_groups(const char* groups_filename)
 void GroupMatchHandler::process(Matches& matches)
 {
 	DisambiguationMatchHandler::process(matches);
+	TYPE_COUNT_MAP type_count_map;
 	for (Matches::iterator match_it = matches.begin(); match_it != matches.end(); match_it++) {
-		unordered_map<SERIAL, int> group_count;
 		for (int i = 0; i < (*match_it)->size; i++) {
-			unordered_map<SERIAL, SERIALS>::iterator entity_group_it = this->entity_group_map.find((*match_it)->entities[i].id.serial);
-			if (entity_group_it != this->entity_group_map.end()) {
-				for (SERIALS::iterator serials_it = entity_group_it->second.begin(); serials_it != entity_group_it->second.end(); serials_it++) {
-					unordered_map<SERIAL,int>::iterator count_it = group_count.find(*serials_it);
-					if (count_it == group_count.end()) {
-						group_count[*serials_it] = 1;
+			int type = (*match_it)->entities[i].type;
+			TYPE_COUNT_MAP::iterator type_count_it = type_count_map.find(type);
+			if (type_count_it == type_count_map.end()) {
+				type_count_map[type] = 1;
+			}
+			else {
+				type_count_it->second++;
+			}
+		}
+	}
+	for (Matches::iterator match_it = matches.begin(); match_it != matches.end(); match_it++) {
+		unordered_set<int> excluded;
+		bool ambiguous = true;
+		while (ambiguous) {
+			unordered_map<SERIAL, int> group_count;
+			int size = 0;
+			for (int i = 0; i < (*match_it)->size; i++) {
+				if (excluded.find((*match_it)->entities[i].type) == excluded.end()) {
+					unordered_map<SERIAL, SERIALS>::iterator entity_group_it = this->entity_group_map.find((*match_it)->entities[i].id.serial);
+					if (entity_group_it != this->entity_group_map.end()) {
+						for (SERIALS::iterator serials_it = entity_group_it->second.begin(); serials_it != entity_group_it->second.end(); serials_it++) {
+							unordered_map<SERIAL,int>::iterator group_count_it = group_count.find(*serials_it);
+							if (group_count_it == group_count.end()) {
+								group_count[*serials_it] = 1;
+							}
+							else {
+								group_count_it->second++;
+							}
+						}
+					}
+					size++;
+				}
+			}
+			SERIALS common_groups;
+			for (unordered_map<SERIAL, int>::iterator group_count_it = group_count.begin(); group_count_it != group_count.end(); group_count_it++) {
+				if (group_count_it->second == size) {
+					common_groups.push_back(group_count_it->first);
+				}
+			}
+			if (size == 0) {
+				delete (*match_it)->entities;
+				(*match_it)->entities = NULL;
+				(*match_it)->size = 0;
+				ambiguous = false;
+			}
+			else if (size == 1 or common_groups.size()) {
+				int n = common_groups.size();
+				size += n;
+				Entity* entities = new Entity[size];
+				int i = 0;
+				for (int j = 0; j < (*match_it)->size; j++) {
+					if (excluded.find((*match_it)->entities[j].type) == excluded.end()) {
+						entities[i] = (*match_it)->entities[j];
+						i++;
+					}
+				}
+				for (int j = 0; j < n; j++) {
+					entities[i].id.serial = common_groups[j];
+					if (this->entity_type_map != NULL) {
+						entities[i].type = (*this->entity_type_map)[common_groups[j]];
 					}
 					else {
-						count_it->second++;
+						entities[i].type = this->type;
+					}
+				}
+				delete (*match_it)->entities;
+				(*match_it)->entities = entities;
+				(*match_it)->size = size;
+				ambiguous = false;
+			}
+			else {
+				int min_count = INT_MAX;
+				for (int i = 0; i < (*match_it)->size; i++) {
+					int type = (*match_it)->entities[i].type;
+					if (excluded.find(type) == excluded.end()) {
+						int count = type_count_map[type];
+						if (count < min_count) {
+							min_count = count;
+						}
+					}
+				}
+				for (int i = 0; i < (*match_it)->size; i++) {
+					int type = (*match_it)->entities[i].type;
+					if (type_count_map[type] == min_count) {
+						excluded.insert(type);
 					}
 				}
 			}
-		}
-		SERIALS common_groups;
-		for (unordered_map<SERIAL, int>::iterator count_it = group_count.begin(); count_it != group_count.end(); count_it++) {
-			if (count_it->second == (*match_it)->size) {
-				common_groups.push_back(count_it->first);
-			}
-		}
-		if (common_groups.size()) {
-			size_t old_size = (*match_it)->size;
-			size_t new_size = old_size+common_groups.size();
-			Entity* new_entities = new Entity[new_size];
-			memcpy(new_entities, (*match_it)->entities, old_size*sizeof(Entity));
-			for (unsigned int i = 0; i < common_groups.size(); i++) {
-				new_entities[old_size+i].id.serial = common_groups[i];
-				if (this->group_type_map != NULL) {
-					new_entities[old_size+i].type = (*this->group_type_map)[common_groups[i]];
-				}
-				else {
-					new_entities[old_size+i].type = this->type;
-				}
-			}
-			delete (*match_it)->entities;
-			(*match_it)->entities = new_entities;
-			(*match_it)->size = new_size;
-		}
-		else if ((*match_it)->size > 1) {
-			delete (*match_it)->entities;
-			(*match_it)->entities = NULL;
-			(*match_it)->size = 0;
 		}
 	}
 }
