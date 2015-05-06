@@ -31,22 +31,22 @@ int validate_opt(char* var) {
 
 int main (int argc, char *argv[])
 {
-	TsvDocumentReader document_reader = TsvDocumentReader(stdin);
 	EntityTypeMap* entity_type_map = NULL;
 	GetMatchesParams params;
 	MetaBatchHandler batch_handler;
 	ThreadedBatchTagger batch_tagger;
 
     // some default values for the command line arguments
-    int threads = 16;
+    int threads = 1;
     char entities[MAXFILENAMELEN] = "";
     char names[MAXFILENAMELEN] = "";
     char stoplist[MAXFILENAMELEN] = "";
     char local[MAXFILENAMELEN] = "";
     char groups[MAXFILENAMELEN] = "";
-    char pairs[MAXFILENAMELEN] = "";
+    char pair_types[MAXFILENAMELEN] = "";
     char all_matches[MAXFILENAMELEN] = "";
     char all_pairs[MAXFILENAMELEN] = "";
+    char documents[MAXFILENAMELEN] = "";
     float document_weight = 1;
     float paragraph_weight = 2;
     float sentence_weight = 0.2;
@@ -56,26 +56,27 @@ int main (int argc, char *argv[])
     while (1) {
         static struct option long_options[] =
         {
-            {"threads", required_argument, 0, 't'},
+            {"threads", optional_argument, 0, 't'},
             {"entities", required_argument, 0, 'e'},
             {"names", required_argument, 0, 'n'},
             {"stoplist", required_argument, 0, 's'},
             {"local", optional_argument, 0, 'l'},
             {"groups", optional_argument, 0, 'g'},
-            {"document_weight", optional_argument, 0, 'd'},
-            {"paragraph_weight", optional_argument, 0, 'r'},
-            {"sentence_weight", optional_argument, 0, 'c'},
-            {"factor_exponent", optional_argument, 0, 'f'},
-            {"all_matches", optional_argument, 0, 'm'},
-            {"all_pairs", optional_argument, 0, 'a'},
-            {"pairs", optional_argument, 0, 'p'},
+            {"document-weight", optional_argument, 0, 'd'},
+            {"paragraph-weight", optional_argument, 0, 'r'},
+            {"sentence-weight", optional_argument, 0, 'c'},
+            {"factor-exponent", optional_argument, 0, 'f'},
+            {"all-matches", optional_argument, 0, 'm'},
+            {"all-pairs", optional_argument, 0, 'a'},
+            {"pair-types", optional_argument, 0, 'p'},
+            {"documents", optional_argument, 0, 'o'},
             {"help", no_argument, 0, 'h'},
             {0, 0, 0, 0}
         };
 
         int option_index = 0;
 
-        c = getopt_long (argc, argv, "t:e:n:s:l:g:p:d:r:c:f:", long_options, &option_index);
+        c = getopt_long (argc, argv, "t:e:n:s:l:g:p:d:r:c:f:o:", long_options, &option_index);
 
         /* Detect the end of the options. */
         if (c == -1)
@@ -84,7 +85,23 @@ int main (int argc, char *argv[])
         switch (c) {
            
             case 'h':
-                printf("Usage: ... \n");
+                printf("Usage: %s [OPTIONS]\n", argv[0]);
+                printf("Required Arguments\n");
+                printf("\t--entities=filename\n");
+                printf("\t--names=filename\n");
+                printf("\t--stoplist=filename\n");
+                printf("Optional Arguments\n");
+                printf("\t--documents=filename\tRead input from file instead of from STDIN\n");
+                printf("\t--threads=%d\n", threads);
+                printf("\t--document-weight=%1.2f\n", document_weight);
+                printf("\t--paragraph-weight=%1.2f\n", paragraph_weight);
+                printf("\t--sentence-weight=%1.2f\n", sentence_weight);
+                printf("\t--factor-exponent=%1.2f\n", factor_exponent);
+                printf("\t--pair-types=filename\tTypes of pairs that are allowed\n");
+                printf("\t--local=filename\n");
+                printf("\t--groups=filename\n");
+                printf("\t--all-matches=filename\n");
+                printf("\t--all-pairs=filename\n");
                 exit(0);
                 break;
 
@@ -162,7 +179,13 @@ int main (int argc, char *argv[])
 
             case 'p':
                 if (optarg) {
-                    strncpy(pairs, optarg, min(MAXFILENAMELEN, int(sizeof(pairs))));
+                    strncpy(pair_types, optarg, min(MAXFILENAMELEN, int(sizeof(pair_types))));
+                }
+                break;
+
+            case 'o':
+                if (optarg) {
+                    strncpy(documents, optarg, min(MAXFILENAMELEN, int(sizeof(documents))));
                 }
                 break;
 
@@ -197,22 +220,31 @@ int main (int argc, char *argv[])
 
 	cerr << " done." << endl;
 
+
+	TsvDocumentReader *document_reader;
+    if (validate_opt(documents)) {
+        // then we read from the documents file instead of from stdin
+	    document_reader = new TsvDocumentReader(documents);
+    }
+    else {
+        document_reader = new TsvDocumentReader(stdin);
+    }
     
-    
+
     if (validate_opt(all_pairs)) {
         if (validate_opt(all_matches)) {
 		    batch_handler.push_back(new PrintBatchHandler(all_matches));
         }
-        if (validate_opt(pairs)) {
-		    batch_handler.push_back(new SelectiveScoreBatchHandler(all_pairs, entity_type_map, document_weight, paragraph_weight, sentence_weight, factor_exponent, pairs));
+        if (validate_opt(pair_types)) {
+		    batch_handler.push_back(new SelectiveScoreBatchHandler(all_pairs, entity_type_map, document_weight, paragraph_weight, sentence_weight, factor_exponent, pair_types));
         }
         else {
             batch_handler.push_back(new ScoreBatchHandler(all_pairs, entity_type_map, document_weight, paragraph_weight, sentence_weight, factor_exponent));
         }
     }
     else {
-        if (validate_opt(pairs)) {
-            batch_handler.push_back(new SelectiveScoreBatchHandler(stdout, entity_type_map, document_weight, paragraph_weight, sentence_weight, factor_exponent, pairs));
+        if (validate_opt(pair_types)) {
+            batch_handler.push_back(new SelectiveScoreBatchHandler(stdout, entity_type_map, document_weight, paragraph_weight, sentence_weight, factor_exponent, pair_types));
         }
         else {
             batch_handler.push_back(new ScoreBatchHandler(stdout, entity_type_map, document_weight, paragraph_weight, sentence_weight, factor_exponent));
@@ -244,7 +276,7 @@ int main (int argc, char *argv[])
 	profile_print();
 	#endif
 	
-	batch_tagger.process(threads, &document_reader, params, &batch_handler);
+	batch_tagger.process(threads, document_reader, params, &batch_handler);
 	cerr << endl << "# Batch done." << endl;
 	
 	#ifdef REFLECT_PROFILE
