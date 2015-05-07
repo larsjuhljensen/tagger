@@ -214,8 +214,7 @@ int main (int argc, char *argv[])
 		batch_tagger.load_local(local);
     }
     if (validate_opt(groups)) {
-		entity_type_map = new EntityTypeMap(entities);
-		batch_tagger.load_groups(entity_type_map, groups);
+		batch_tagger.load_groups(groups);
     }
 
 	cerr << " done." << endl;

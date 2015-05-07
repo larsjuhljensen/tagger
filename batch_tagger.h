@@ -23,9 +23,10 @@ class DocumentTagger : public Tagger
 		~DocumentTagger();
 		
 	public:
+		void load_names(const char* entities_filename, const char* names_filename);
+		void load_names(int type, const char* names_filename);
+		void load_groups(const char* groups_filename);
 		void load_groups(int type, const char* groups_filename);
-		void load_groups(EntityTypeMap* entities_type_map, const char* groups_filename);
-		void load_groups(const char* entities_filename, const char* groups_filename);
 		
 	public:
 		void process(Document& document, const GetMatchesParams& params, IDocumentHandler* document_handler);
@@ -55,21 +56,25 @@ DocumentTagger::~DocumentTagger()
 {
 }
 
-void DocumentTagger::load_groups(int type, const char* groups_filename)
-{
-	this->match_handler = new GroupMatchHandler(type, groups_filename);
+void DocumentTagger::load_names(const char* entities_filename, const char* names_filename) {
+	Tagger::load_names(entities_filename, names_filename);
+	this->entity_type_map = new EntityTypeMap(entities_filename);
 }
 
-void DocumentTagger::load_groups(EntityTypeMap* entity_type_map, const char* groups_filename)
+void DocumentTagger::load_names(int type, const char* names_filename) {
+	Tagger::load_names(type, names_filename);
+}
+
+void DocumentTagger::load_groups(const char* groups_filename)
 {
-	this->entity_type_map = entity_type_map;
 	delete this->match_handler;
 	this->match_handler = new GroupMatchHandler(this->entity_type_map, groups_filename);
 }
 
-void DocumentTagger::load_groups(const char* entities_filename, const char* groups_filename)
+void DocumentTagger::load_groups(int type, const char* groups_filename)
 {
-	load_groups(new EntityTypeMap(entities_filename), groups_filename);
+	delete this->match_handler;
+	this->match_handler = new GroupMatchHandler(type, groups_filename);
 }
 
 void DocumentTagger::process(Document& document, const GetMatchesParams& params, IDocumentHandler* document_handler)
