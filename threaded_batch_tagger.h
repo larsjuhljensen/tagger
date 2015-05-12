@@ -23,10 +23,6 @@ class TaggerThread : public Thread
 
 class ThreadedBatchTagger : public BatchTagger
 {
-	private:
-		EntityTypeMap* entity_type_map;
-		IMatchHandler* match_handler;
-		
 	public:
 		void process(int threads, IDocumentReader* document_reader, const GetMatchesParams& params, IBatchHandler* batch_handler);
 };

@@ -14,7 +14,7 @@ using namespace std::tr1;
 
 class DocumentTagger : public Tagger
 {
-	private:
+	public:
 		EntityTypeMap* entity_type_map;
  		IMatchHandler* match_handler;
 		

@@ -233,6 +233,7 @@ void GroupMatchHandler::process(Matches& matches)
 					else {
 						entities[i].type = this->type;
 					}
+					i++;
 				}
 				delete (*match_it)->entities;
 				(*match_it)->entities = entities;
