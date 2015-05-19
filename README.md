@@ -82,11 +82,13 @@ The entities file contains the following three tab separated columns:
 Some examples:
 
 A protein will look like this:
+
 * serialno
 * ncbitax
 * myproteinid
 
 A species will look like this:
+
 * serialno
 * -3
 * ncbitax
@@ -132,7 +134,7 @@ NB: additionally, an output file for the scored pairs output must also be specif
 
 By default, pairs are given a score of 1 if they occur in the same document, a score of 2 if they occur in the same paragraph, and a score of 0.2 if they occur in the same sentence.  The parameter a in the following formula controls the weight of the normalization factor (actually, 1-a is the exponent on the normalization factor, but let's not be too pedantic).
 
-score = c_jk^a * ( c_ij * c_.. / c_i. * c_.j )^(1-a)
+score = c_jk^a * ( c_ij * c_.. / c_i. * c_.j )^(1-a)  
 
 Where . is shorthand for "count over all entities of the given type".  
 
@@ -204,7 +206,9 @@ If --type-pairs and --output-pairs are specified, then output will be written to
 
 Example: specify stopwords and pairs, and output pairs output to a file called output-pairs.
 ~~~~
-gzip -cd `ls -1r ../../databases/Medline/*.tsv.gz` | tagcorpus --entities=entities --names=names --stopwords=all_global.tsv --type-pairs=typepairs --threads=16 --out-pairs=output-pairs > output-mentions
+gzip -cd `ls -1r ../../databases/Medline/*.tsv.gz` | tagcorpus --entities=entities \\
+--names=names --stopwords=all_global.tsv --type-pairs=typepairs --threads=16 \\
+--out-pairs=output-pairs > output-mentions
 ~~~~
 
 ## TODO ##
