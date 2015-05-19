@@ -62,13 +62,37 @@ A species will look like this:
 
 The names file specifies the actual strings of text that might be written in a document that refer to a specific entity. 
 
-The names file contains 
+The names file contains the following two tab separated columns:
 * serialno
 * synonym
 
+There may be multiple lines for each serialno.
+
+
+
+#### Typepairs ####
+
+Often, one wants to record that two terms have occurred together.  To do this, a file that specifies the types of pairs that are allowed to pair 
+
+
+#### Stopwords ####
+
+Some of the synonyms that are specified in the names file may match more than just occurrences of the gene.  For example, there are human genes named RAN, etc.  We don't want this to match every  mention of someone running a gel, so we can explicitly specify 'ran' as a stopword.  
+
+The tagger is case sensitive, so the stopword 'ran' will match exactly this string, but RAN will continue to be tagged as a gene.  LARS, please verify.
+
+The format of the stopwords file is two tab separated columns:
+* the word, which may be a string containing spaces
+* either the string "t" or the string "f", according to whether it is a stopword or not
+
+Only stopwords with t in the second column are used as stopwords.  This format makes it relatively easy to convert the output of the tagger run without stopwords into a stopword list that can be manually curated.  
+
+#### Groups ####
+
+Groups specifies the orthology groups of proteins that should be treated as the same protein.  For example, we can use this to specify that if we find a mention of the mouse protein X (LARS, need good example) then this is similar enough (== in the same orthology group) to the human protein that we will count it as "the same protein", but if we find a mention of the drosophila protein, then this is different enough that it is not the same protein.  
 
 ### Running tagcorpus ###
 
-### Who do I talk to? ###
+## Contact ##
 
 * Contact: Lars Juhl Jensen, lars.juhl.jensen (at) cpr.ku.dk
