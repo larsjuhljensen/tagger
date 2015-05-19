@@ -10,8 +10,7 @@ This repository contains the code for tagcorpus, a C++ program that, most genera
 
 Let's say you are interested in the human protein P53.  You want to find all the mentions of P53 in the literature.  However, P53 can be spelled in a variety of ways P53, P-53, etc, and you would like to find all of them.
 
-Some of this expansion is done automatically.  
-
+Some of this expansion is done automatically.  LARS, which?
 
 ## Running tagcorpus ##
 
@@ -168,7 +167,29 @@ Groups specifies the orthology groups of proteins that should be treated as the 
 
 By default tagcorpus runs single threaded.
 
-### Running tagcorpus ###
+### Output Formats ###
+
+#### Mentions ####
+
+The output of tagging individual entities is output on stdout.  This output contains the following 8 tab separated columns.
+
+1. pubmedid
+2. paragraph number
+3. sentence number
+4. first character of the match
+5. last character of the match
+6. term matched
+7. species taxid
+8. serialno
+
+#### Pairs ####
+
+If --type-pairs and --output-pairs are specified, then output will be written to the file specified by --output-pairs.  This output contains 8 tab separated columns, but only the first three are relevant.  (The others can be used if the output is to be incrementally updated, but that is beyond the scope of this document.)
+
+1. serialno1
+2. serialno2
+3. final score
+4. all remaining columns are unused
 
 ## Contact ##
 
