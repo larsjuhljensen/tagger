@@ -2,7 +2,7 @@
 
 ## What is this repository for? ##
 
-This repository holds tagcorpus, a C++ program that, most generally, allows you to tag a corpus of documents with search terms that you provide.  It is often used to find mentions of proteins, species, diseases, tissues, chemicals and drugs, GO terms, and so forth, in articles in the Medline corpus.  
+This repository contains the code for tagcorpus, a C++ program that, most generally, allows you to tag a corpus of documents with search terms that you provide.  It is often used to find mentions of proteins, species, diseases, tissues, chemicals and drugs, GO terms, and so forth, in articles in the Medline corpus.  
 
 ## Textmining in a bit more detail ##
 
@@ -34,16 +34,38 @@ and then ensure tagcorpus is in your path.
 
 ### Input Files ###
 
-You will need several input files to run tagcorpus.
+You will need several input files to run tagcorpus.  Entities and names are required, and the others are optional.
 
 #### Entities ####
 
-The entities file specifies some metadata about the things that you want to tag.  You will have a line in this file for every entity that you want to tag.  Entities are things like proteins, species, diseases, tissues, chemicals and drugs, GO terms.  
+Specified with the --entities command line option.
+
+The entities file specifies some metadata about the things, or entities, that you want to tag.  You will have a line in this file for every entity that you want to tag.  Entities are things like proteins, species, diseases, tissues, chemicals and drugs, GO terms.  
 
 The entities file contains the following three tab separated columns:
 * **serialno**, a unique positive integer.  Serial numbers do not need to occur in sorted order, they just need to be unique.
 * **entity type**, an integer that specifies what kind of thing (protein, species, disease, ...) the entity is.  If the entity is a species, it's entity type will be its NCBI taxonomic identifier.  All other types have negative entity types, as specified below.
 * **your identifier** for the entity.  If it's a protein, this is the string identifier, without the ncbitaxid prepended. 
+
+| Type | entity type              |
+| ---- | ------------------------ |
+| -1   | chemicals                |
+| -2   | ????                     |
+| -3   | NCBI species taxonomy id |
+| -11  | Wikipedia                |
+| -21  | GO biological process    |
+| -22  | GO cellular component    |
+| -23  | GO molecular function    |
+| -24  | GO other (unused)        |
+| -25  | BTO tissues              |
+| -26  | DOID diseases            |
+| -27  | ENVO environments        |
+| -28  | APO phenotypes           |
+| -29  | FYPO phenotypes          |
+| -30  | MPheno phenotypes        |
+| -31  | NBO behaviors            |
+
+
 
 Some examples:
 
@@ -60,7 +82,7 @@ A species will look like this:
 
 #### Names ####
 
-The names file specifies the actual strings of text that might be written in a document that refer to a specific entity. 
+The names file specifies the actual strings of text that might be written in a document that refer to a specific entity.  It is specified with the --names command line option.
 
 The names file contains the following two tab separated columns:
 * serialno
@@ -70,10 +92,35 @@ There may be multiple lines for each serialno.
 
 
 
-#### Typepairs ####
+#### Type-pairs ####
 
-Often, one wants to record that two terms have occurred together.  To do this, a file that specifies the types of pairs that are allowed to pair 
+Often, one wants to record that two terms have occurred together, not just the fact that either has occurred individually.  For example, we might be interested in viral proteins that interact with human proteins, and we want to generate a score for how often influenza and human proteins are mentioned together.  
 
+To do this, a file that specifies the types of entities that form interesting pairs should be generated.  It is specified with the --type-pairs command line option.  The type-pairs file contains the following two tab separated columns:
+* type1
+* type2
+
+Then, I would specify a line containing the taxid for human (9606) and the taxid for influenza (11320).  
+* 9606
+* 11320
+
+Order in this file doesn't matter.  LARS, please confirm.
+
+As a further example, if I wanted to pair human proteins with diseases, I would specify
+* 9606
+* -26
+
+NB: additionally, an output file for the scored pairs output must also be specified, or the output will not be recorded anywhere.  This is done with the --out-pairs option. 
+
+#### Optional options for scoring pairs ####
+
+By default, pairs are given a score of 1 if they occur in the same document, a score of 2 if they occur in the same paragraph, and a score of 0.2 if they occur in the same sentence.  The parameter a in the following formula controls the weight of the normalization factor.
+
+score = c_jk^a * ( c_ij * c_.. / c_i. * c_.j )^(1-a)
+
+Where . is shorthand for "count over all entities of the given type".  
+
+These values can be set with the --document-weight, --paragraph-weight, --sentence-weight and --normalization-factor command line options respectively.
 
 #### Stopwords ####
 
