@@ -191,6 +191,12 @@ If --type-pairs and --output-pairs are specified, then output will be written to
 3. final score
 4. all remaining columns are unused
 
+
+## TODO ##
+
+* Autogenerating the dictionary
+* post processing scripts to write the output into string db
+
 ## Contact ##
 
 * Contact: Lars Juhl Jensen, lars.juhl.jensen (at) cpr.ku.dk
