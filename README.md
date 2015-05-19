@@ -8,16 +8,18 @@ This repository holds tagcorpus, a C++ program that, most generally, allows you 
 
 ### Prerequisites ###
 
-tagcorpus is known to compile under Suse Linux (version?).  
+tagcorpus is known to compile under Suse Linux (version?).  If you are compiling under MacOSX or another version of linux, you will need to install and configure the following libraries (beyond the scope of this document). 
 
 * swig
 * boost
 
-### Installation ###
+### Compiling and installation ###
+
+There is no configure step, just
 
   make
 
-Make sure tagcorpus is in your path.
+and then make sure tagcorpus is in your path.
 
 ### Input Files ###
 
