@@ -8,9 +8,10 @@ This repository contains the code for tagcorpus, a C++ program that, most genera
 
 "Tagging" a document is the process of recording where in the document given entities are mentioned.
 
-Let's say you are interested in the human protein P53.  You want to find all the mentions of P53 in the literature.  However, P53 can be spelled in a variety of ways P53, P-53, etc, and you would like to find all of them.
+Let's say you are interested in the human protein P53.  You want to find all the mentions of P53 in the literature.  However, P53 can be spelled in a variety of ways P53, P-53, etc, so this is a harder problem than it originally seems since you just want to find everything that refers to the P53 protein; the spelling is not important to you. 
 
 Some of this expansion is done automatically.  LARS, which?
+
 
 ## Running tagcorpus ##
 
@@ -33,17 +34,23 @@ and then ensure tagcorpus is in your path.
 
 ### Input Files and Options ###
 
-You will need several input files to run tagcorpus.  Entities and names are required, and the others are optional.
+You will need several input files to run tagcorpus.  Documents, entities and names are required, and the others are optional.
 
 There are two modes that tagcorpus can be run in, auto-detect and no auto-detect. 
 
 By default, proteins are assumed to be human proteins if no specifying organism is mentioned.
 
+#### Documents ####
+
+The documents to be searched are by default provided on stdin, unless a file is specified with the --documents command line argument, in which case this file is read as input instead. 
+
+If you are using the CPR server infrastructure, the Medline documents are available under /home/red1/databases/Medline
+
 #### Entities ####
 
 Specified with the --entities command line option.
 
-The entities file specifies some metadata about the things, or entities, that you want to tag.  You will have a line in this file for every entity that you want to tag.  Entities are things like proteins, species, diseases, tissues, chemicals and drugs, GO terms.  
+The entities file specifies some metadata about the things (called entities) that you want to tag.  These can be proteins, species, diseases, tissues, chemicals and drugs, GO terms, etc.  There should be a line in this file for each entity that you want to tag.  
 
 The entities file contains the following three tab separated columns:
 
@@ -87,7 +94,7 @@ A species will look like this:
 
 #### Names ####
 
-The names file specifies the actual strings of text that might be written in a document that refer to a specific entity.  It is specified with the --names command line option.
+The names file specifies the actual strings of text that might be written in a document that refer to a specific entity.  (LARS are these names expanded, case sensitive?)  The names file is specified with the --names command line option.
 
 The names file contains the following two tab separated columns:
 
@@ -100,19 +107,19 @@ There may be multiple lines for each serialno.
 
 #### Type-pairs ####
 
-Often, one wants to record that two terms have occurred together, not just the fact that either has occurred individually.  For example, we might be interested in viral proteins that interact with human proteins, and we want to generate a score for how often influenza and human proteins are mentioned together.  
+Often, one wants to record that two terms have occurred together, not just the fact that either has occurred individually.  For example, we might be interested in viral proteins that interact with human proteins, and would want to generate a score for how often influenza and human proteins are mentioned together.  
 
-To do this, a file that specifies the types of entities that form interesting pairs should be generated.  It is specified with the --type-pairs command line option.  The type-pairs file contains the following two tab separated columns:
+To do this, a file that specifies the types of entities that can form interesting pairs should be generated.  It is specified with the --type-pairs command line option.  The type-pairs file contains the following two tab separated columns:
 
 * type1
 * type2
 
-Then, I would specify a line containing the taxid for human (9606) and the taxid for influenza (11320).  
+Then, in the human and influenza protein example, I would specify a line containing the taxid for human (9606) and the taxid for influenza (11320).  
 
 * 9606
 * 11320
 
-Order in this file doesn't matter.  LARS, please confirm.
+Order in this file doesn't matter (LARS, please confirm).
 
 As a further example, if I wanted to pair human proteins with diseases, I would specify
 
@@ -123,7 +130,7 @@ NB: additionally, an output file for the scored pairs output must also be specif
 
 #### Optional options for scoring pairs ####
 
-By default, pairs are given a score of 1 if they occur in the same document, a score of 2 if they occur in the same paragraph, and a score of 0.2 if they occur in the same sentence.  The parameter a in the following formula controls the weight of the normalization factor.
+By default, pairs are given a score of 1 if they occur in the same document, a score of 2 if they occur in the same paragraph, and a score of 0.2 if they occur in the same sentence.  The parameter a in the following formula controls the weight of the normalization factor (actually, 1-a is the exponent on the normalization factor, but let's not be too pedantic).
 
 score = c_jk^a * ( c_ij * c_.. / c_i. * c_.j )^(1-a)
 
@@ -145,7 +152,7 @@ This is equivalent to specifying the species entities in the entities file.  LAR
 
 #### Stopwords ####
 
-Some of the synonyms that are specified in the names file may match more than just occurrences of the gene.  For example, there are human genes named RAN, etc.  We don't want this to match every  mention of someone running a gel, so we can explicitly specify 'ran' as a stopword.  
+Some of the synonyms that are specified in the names file may match more than just occurrences of the gene.  For example, there are human genes named RAN, etc.  We don't want to match every instance that a researcher "ran a gel", so we can explicitly specify 'ran' as a stopword.  
 
 The tagger is case sensitive, so the stopword 'ran' will match exactly this string, but RAN will continue to be tagged as a gene.  LARS, please verify.
 
@@ -158,20 +165,22 @@ Only stopwords with t in the second column are used as stopwords.  This format m
 
 #### Groups ####
 
-Groups specifies the orthology groups of proteins that should be treated as the same protein.  For example, we can use this to specify that if we find a mention of the mouse protein CDK1 then this is similar enough (== in the same orthology group) to the human protein CDK1 that we will count it as "the same protein", but if we find a mention of the drosophila protein CDK1, then this is different enough that it is not the same protein.  
+The groups file, specified with the --groups command line argument contains the orthology groups of proteins that should be treated as the same protein.  For example, if we are interested in tagging the human protein CDK1, and we know that humans are similar enough to mice that a paper containing findings about the mouse CDK1 are likely to also be applicable to the human CDK1.  We specify "similar enough", using the groups file to say that human CDK1 and mouse CDK1 are in the same orthology group.
+
+The format of the groups file is as follows
+
+* LARS, what is the format?
 
 
 #### Threads ####
 
---threads 
-
-By default tagcorpus runs single threaded.
+By default tagcorpus runs single threaded, but can be configured using the --threads command line option to run with any integer number of threads (best matched to the number of CPU cores that are available to you). 
 
 ### Output Formats ###
 
 #### Mentions ####
 
-The output of tagging individual entities is output on stdout.  This output contains the following 8 tab separated columns.
+The output of tagging individual entities is output on stdout unless a file is specified with the --out-matches command line argument.  This output contains the following 8 tab separated columns.
 
 1. pubmedid
 2. paragraph number
@@ -191,6 +200,12 @@ If --type-pairs and --output-pairs are specified, then output will be written to
 3. final score
 4. all remaining columns are unused
 
+## Examples of use ##
+
+Example: specify stopwords and pairs, and output pairs output to a file called output-pairs.
+~~~~
+gzip -cd `ls -1r ../../databases/Medline/*.tsv.gz` | tagcorpus --entities=entities --names=names --stopwords=all_global.tsv --type-pairs=typepairs --threads=16 --out-pairs=output-pairs > output-mentions
+~~~~
 
 ## TODO ##
 
