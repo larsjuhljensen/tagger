@@ -6,18 +6,16 @@ This repository contains the code for tagcorpus, a C++ program that, most genera
 
 ## Textmining in a bit more detail ##
 
-"Tagging" a document is the process of recording where in the document given entities are mentioned.
+"Tagging" a document is the process of recording where in the document given entities are mentioned.  Often two types of information are tagged concurrently to find co-mentions.  For example, proteins and diseases, or human proteins and viral proteins.  
 
-Let's say you are interested in the human protein P53.  You want to find all the mentions of P53 in the literature.  However, P53 can be spelled in a variety of ways P53, P-53, etc, so this is a harder problem than it originally seems since you just want to find everything that refers to the P53 protein; the spelling is not important to you. 
-
-Some of this expansion is done automatically.  LARS, which?
+Let's say you are interested in the human protein P53.  You want to find all the mentions of P53 in the literature.  However, P53 can be spelled in a variety of ways P53, P-53, p53, "Tumor protein p53", etc, so this is a harder problem than it originally seems.  This tagger will do some of this expansion automatically: case insensitivity, and adding dashes before terminal numbers.  LARS, is this complete?
 
 
 ## Running tagcorpus ##
 
 ### Prerequisites ###
 
-tagcorpus is known to compile under Suse Linux (version?).  If you are compiling under MacOSX or another version of linux, you will need to install and configure the following libraries (beyond the scope of this document). 
+tagcorpus is known to compile under Suse Linux.  If you are compiling under MacOSX or another distribution of linux, you will need to install and configure the following libraries (beyond the scope of this document). 
 
 * swig
 * boost
@@ -44,7 +42,7 @@ By default, proteins are assumed to be human proteins if no specifying organism 
 
 The documents to be searched are by default provided on stdin, unless a file is specified with the --documents command line argument, in which case this file is read as input instead. 
 
-If you are using the CPR server infrastructure, the Medline documents are available under /home/red1/databases/Medline
+If you are using the CPR server infrastructure, the Medline documents are available under /home/purple1/databases/Medline
 
 #### Entities ####
 
@@ -81,13 +79,13 @@ The entities file contains the following three tab separated columns:
 
 Some examples:
 
-A protein will look like this:
+A protein will be described in the entities file with the following columns:
 
 * serialno
 * ncbitax
 * myproteinid
 
-A species will look like this:
+And a species will look like this:
 
 * serialno
 * -3
@@ -96,7 +94,7 @@ A species will look like this:
 
 #### Names ####
 
-The names file specifies the actual strings of text that might be written in a document that refer to a specific entity.  (LARS are these names expanded, case sensitive?)  The names file is specified with the --names command line option.
+The names file specifies the actual strings of text that might be written in a document that refer to a specific entity.  The names file is specified with the --names command line option.
 
 The names file contains the following two tab separated columns:
 
@@ -109,7 +107,7 @@ There may be multiple lines for each serialno.
 
 #### Type-pairs ####
 
-Often, one wants to record that two terms have occurred together, not just the fact that either has occurred individually.  For example, we might be interested in viral proteins that interact with human proteins, and would want to generate a score for how often influenza and human proteins are mentioned together.  
+Often, one wants to record that two terms have occurred together, not just the fact that either has occurred individually.  For example, we might be interested in viral proteins that interact with human proteins, and would want to find out which human proteins the influenza protein hemagglutinin interacts with, and to generate a score for each pair.
 
 To do this, a file that specifies the types of entities that can form interesting pairs should be generated.  It is specified with the --type-pairs command line option.  The type-pairs file contains the following two tab separated columns:
 
@@ -206,7 +204,7 @@ If --type-pairs and --output-pairs are specified, then output will be written to
 
 Example: specify stopwords and pairs, and output pairs output to a file called output-pairs.
 ~~~~
-gzip -cd `ls -1r ../../databases/Medline/*.tsv.gz` | tagcorpus --entities=entities \\
+gzip -cd `ls -1r /home/purple1/databases/Medline/*.tsv.gz` | tagcorpus --entities=entities \\
 --names=names --stopwords=all_global.tsv --type-pairs=typepairs --threads=16 \\
 --out-pairs=output-pairs > output-mentions
 ~~~~
