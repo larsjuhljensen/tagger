@@ -501,7 +501,7 @@ void Tagger::trim_boundaries(const char* document, int& start, int& stop)
 	}
 }
 
-void Tagger::find_matches(Matches& matches, Acronyms& acronyms, Tokens& tokens, char* document, const char* document_id, const GetMatchesParams& params, const unordered_set<int>& entity_types_map)
+void Tagger::find_matches(Matches& matches, Acronyms& acronyms, Tokens& tokens, char* document, const char* document_id, const GetMatchesParams& params, const unordered_set<int>& entity_types)
 {
 	for (Tokens::iterator it = tokens.begin(); it != tokens.end(); ++it) {
 		int tsize = (*it).size();
@@ -549,7 +549,7 @@ void Tagger::find_matches(Matches& matches, Acronyms& acronyms, Tokens& tokens, 
 						ENTITY_VECTOR  entity_subset;
 						for (ENTITY_VECTOR::iterator et = entities.begin(); et != entities.end(); ++et) {
 							Entity& entity = *et;
-							if ((entity.type >= 0 && entity_types_map.find(0) != entity_types_map.end()) || entity_types_map.find(entity.type) != entity_types_map.end()) {
+							if (entity_types.empty() || (entity.type >= 0 && entity_types.find(0) != entity_types.end()) || entity_types.find(entity.type) != entity_types.end()) {
 								entity_subset.push_back(entity);
 							}
 						}
@@ -671,21 +671,21 @@ Matches Tagger::get_matches(char* document, char* document_id, const GetMatchesP
 	// ----------------------------------
 	// Auto-detect organisms (type = -3).
 	// ----------------------------------
-	unordered_set<int> entity_types_map;
+	unordered_set<int> entity_types;
 	if (params.auto_detect) {
-		entity_types_map.insert(-3);
+		entity_types.insert(-3);
 		Matches entity_type_matches;
-		this->find_matches(entity_type_matches, acronyms, tokens, document, document_id, params, entity_types_map);
-		entity_types_map.clear();
+		this->find_matches(entity_type_matches, acronyms, tokens, document, document_id, params, entity_types);
+		entity_types.clear();
 		for (Matches::iterator it = entity_type_matches.begin(); it < entity_type_matches.end(); ++it) {
 			Entity* p = (**it).entities;
 			Entity* q = p+(**it).size;
 			while (p < q) {
 				if (this->serials_only) {
-					entity_types_map.insert(this->organisms[(*p).id.serial]);
+					entity_types.insert(this->organisms[(*p).id.serial]);
 				}
 				else {
-					entity_types_map.insert(atoi((*p).id.string));
+					entity_types.insert(atoi((*p).id.string));
 				}
 				++p;
 			}
@@ -693,9 +693,9 @@ Matches Tagger::get_matches(char* document, char* document_id, const GetMatchesP
 		}
 	}
 	for (vector<int>::const_iterator n = params.entity_types.begin(); n != params.entity_types.end(); ++n) {
-		entity_types_map.insert(*n);
+		entity_types.insert(*n);
 	}
-	this->find_matches(matches, acronyms, tokens, document, document_id, params, entity_types_map);
+	this->find_matches(matches, acronyms, tokens, document, document_id, params, entity_types);
 	return matches;
 }
 

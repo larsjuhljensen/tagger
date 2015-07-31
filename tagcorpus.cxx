@@ -43,6 +43,7 @@ int main (int argc, char *argv[])
 	char groups[MAXFILENAMELEN] = "";
 	char stopwords[MAXFILENAMELEN] = "";
 	int organism = 9606;
+	bool autodetect = true;
 	char type_pairs[MAXFILENAMELEN] = "";
 	char out_matches[MAXFILENAMELEN] = "";
 	char out_pairs[MAXFILENAMELEN] = "";
@@ -137,6 +138,7 @@ int main (int argc, char *argv[])
 			case 'o':
 				if (optarg) {
 					organism = atoi(optarg);
+					autodetect = false;
 				}
 				break;
 			
@@ -235,7 +237,7 @@ int main (int argc, char *argv[])
 		}
 	}
 	
-	params.auto_detect = true;
+	params.auto_detect = autodetect;
 	params.entity_types.push_back(organism);	// STRING human proteins. 
 	params.entity_types.push_back(-1);		// STITCH chemicals.
 	params.entity_types.push_back(-2);		// NCBI taxonomy.

@@ -3,7 +3,7 @@ CFLAGS = -fpic -Wall -O3
 LFLAGS = -fpic -shared -lboost_regex
 PYTHON = -I/usr/include/python
 
-all: tagger_swig.py _tagger_swig.so libtagger.so libtagger.a tagcorpus cleandict environments organisms species spring
+all: tagger_swig.py _tagger_swig.so libtagger.so libtagger.a tagcorpus cleandict environments organisms species
 
 clean:
 	rm -f tagger_swig.py tagcorpus cleandict environments organisms species spring *.pyc *_wrap.cxx *.o *.a *.so

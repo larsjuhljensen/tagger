@@ -66,7 +66,7 @@ class Tagger
 		Matches get_matches(char* document, char* document_id, const GetMatchesParams& params);
 		
 	private:
-		void find_matches(Matches& matches, Acronyms& acronyms, Tokens& tokens, char* document, const char* document_id, const GetMatchesParams& params, const unordered_set<int>& entity_types_map);
+		void find_matches(Matches& matches, Acronyms& acronyms, Tokens& tokens, char* document, const char* document_id, const GetMatchesParams& params, const unordered_set<int>& entity_types);
 		void trim_boundaries(const char* text, int& start, int& stop);
 			
 };
