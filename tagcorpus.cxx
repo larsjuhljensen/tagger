@@ -242,6 +242,7 @@ int main (int argc, char *argv[])
 	params.entity_types.push_back(-1);		// STITCH chemicals.
 	params.entity_types.push_back(-2);		// NCBI taxonomy.
 	params.entity_types.push_back(-11);		// Wikipedia.
+	params.entity_types.push_back(-20);		// OBO default type.
 	params.entity_types.push_back(-21);		// GO biological process.
 	params.entity_types.push_back(-22);		// GO cellular component.
 	params.entity_types.push_back(-23);		// GO molecular function.
