@@ -220,8 +220,7 @@ class Tagger:
 			doc = '\n'.join(doc)
 		return doc
 	
-	def get_html(self, document, document_id, entity_types, auto_detect=True, allow_overlap=False, protect_tags=True, max_tokens=5, tokenize_characters=False, ignore_blacklist=False, html_footer=''):
-		matches = self.get_matches(document, document_id, entity_types, auto_detect, allow_overlap, protect_tags, max_tokens, tokenize_characters, ignore_blacklist)
+	def create_html(self, document, document_id, matches, add_events=False, force_important=False, html_footer=''):
 		matches.sort()
 		doc = []
 		i = 0
@@ -253,15 +252,19 @@ class Tagger:
 							break
 					if reflect_style:
 						break
+				if force_important:
+					reflect_style = ' !important;'.join(reflect_style.split(';'))
 				md5 = hashlib.md5()
 				str = ';'.join(str)
 				md5.update(str)
 				key = md5.hexdigest()
 				divs[key] = str
 				doc.append('<span class="reflect_tag" style="%s" ' % reflect_style)
-				doc.append('onMouseOver="startReflectPopupTimer(\'%s\',\'%s\')" ' % (key, text))
-				doc.append('onMouseOut="stopReflectPopupTimer()" ')
-				doc.append('onclick="showReflectPopup(\'%s\',\'%s\')">' % (key, text))
+				if add_events:
+					doc.append('onMouseOver="startReflectPopupTimer(\'%s\',\'%s\')" ' % (key, text))
+					doc.append('onMouseOut="stopReflectPopupTimer()" ')
+					doc.append('onclick="showReflectPopup(\'%s\',\'%s\')"' % (key, text))
+				doc.append('>')
 				doc.append(text)
 				doc.append('</span>')
 			i = match[1] + 1
@@ -283,6 +286,10 @@ class Tagger:
 		doc.append('</body>\n</html>\n')
 		return self.postprocess_document(document_id, ''.join(doc))
 	
+	def get_html(self, document, document_id, entity_types, auto_detect=True, allow_overlap=False, protect_tags=True, max_tokens=5, tokenize_characters=False, ignore_blacklist=False, add_events=False, force_important=False, html_footer=''):
+		matches = self.get_matches(document, document_id, entity_types, auto_detect, allow_overlap, protect_tags, max_tokens, tokenize_characters, ignore_blacklist)
+		return self.create_html(document, document_id, matches, add_events, force_important, html_footer)
+
 	def get_jsonld(self, document, document_id, annotation_index, entity_types, auto_detect=True, allow_overlap=False, protect_tags=True, max_tokens=5, tokenize_characters=False, ignore_blacklist=False):
 		matches = self.get_matches(document, document_id, entity_types, auto_detect, allow_overlap, protect_tags, max_tokens, tokenize_characters, ignore_blacklist)
 		data = {}
