@@ -220,7 +220,7 @@ class Tagger:
 			doc = '\n'.join(doc)
 		return doc
 	
-	def create_html(self, document, document_id, matches, add_events=False, force_important=False, html_footer=''):
+	def create_html(self, document, document_id, matches, basename='tagger', add_events=False, extra_classes=False, force_important=False, html_footer=''):
 		matches.sort()
 		doc = []
 		i = 0
@@ -236,30 +236,33 @@ class Tagger:
 			if match[2] != None:
 				text = document[match[0]:match[1]+1]
 				str = []
+				match_classes = [basename+'_match']
 				match_types = set()
 				for entity_type, entity_identifier in match[2]:
 					str.append('%i.%s' % (entity_type, entity_identifier))
 					all_types.add(entity_type)
 					match_types.add(entity_type)
-				reflect_style = ''
+					if extra_classes:
+						match_classes.append(entity_identifier)
+				match_style = ''
 				for priority in sorted(self.styles.iterkeys()):
 					if priority not in self.types:
-						reflect_style = self.styles[priority]
+						match_style = self.styles[priority]
 						break
 					for entity_type in match_types:
 						if priority_type_rule[priority](entity_type):
-							reflect_style = self.styles[priority]
+							match_style = self.styles[priority]
 							break
-					if reflect_style:
+					if match_style:
 						break
 				if force_important:
-					reflect_style = ' !important;'.join(reflect_style.split(';'))
+					match_style = ' !important;'.join(match_style.split(';'))
 				md5 = hashlib.md5()
 				str = ';'.join(str)
 				md5.update(str)
 				key = md5.hexdigest()
 				divs[key] = str
-				doc.append('<span class="reflect_tag" style="%s" ' % reflect_style)
+				doc.append('<span class="%s" style="%s" ' % (' '.join(match_classes), match_style))
 				if add_events:
 					doc.append('onMouseOver="startReflectPopupTimer(\'%s\',\'%s\')" ' % (key, text))
 					doc.append('onMouseOut="stopReflectPopupTimer()" ')
@@ -271,24 +274,24 @@ class Tagger:
 		if i < len(document):
 			length = len(document)-i
 			doc.append(document[i:i+length+1])
-		doc.append('<div class="reflect_entities" style="display: none;">\n')
+		doc.append('<div class="%s_entities" style="display: none;">\n' % basename)
 		for key in divs:
 			str = divs[key]
 			doc.append('  <span name="%s">%s</span>\n' % (key, str))
 		doc.append('</div>\n')
-		doc.append('<div style="display: none;" class="reflect_entity_types">\n')
+		doc.append('<div style="display: none;" class="%s_entity_types">\n' % basename)
 		for entity_type in all_types:
 			doc.append('  <span>%i</span>\n' % entity_type)
 		doc.append('</div>\n')
-		doc.append('<div style="display: none;" id="reflect_div_doi">%s</div>\n' % document_id)
+		doc.append('<div style="display: none;" id="%s_div_doi">%s</div>\n' % (basename, document_id))
 		doc.append('<div name="reflect_v2" style="display: none;"></div>\n')
 		doc.append(html_footer)
 		doc.append('</body>\n</html>\n')
 		return self.postprocess_document(document_id, ''.join(doc))
 	
-	def get_html(self, document, document_id, entity_types, auto_detect=True, allow_overlap=False, protect_tags=True, max_tokens=5, tokenize_characters=False, ignore_blacklist=False, add_events=False, force_important=False, html_footer=''):
+	def get_html(self, document, document_id, entity_types, auto_detect=True, allow_overlap=False, protect_tags=True, max_tokens=5, tokenize_characters=False, ignore_blacklist=False, basename='tagger', add_events=False, force_important=False, html_footer=''):
 		matches = self.get_matches(document, document_id, entity_types, auto_detect, allow_overlap, protect_tags, max_tokens, tokenize_characters, ignore_blacklist)
-		return self.create_html(document, document_id, matches, add_events, force_important, html_footer)
+		return self.create_html(document, document_id, matches, basename=basename, add_events=add_events, force_important=force_important, html_footer=html_footer)
 
 	def get_jsonld(self, document, document_id, annotation_index, entity_types, auto_detect=True, allow_overlap=False, protect_tags=True, max_tokens=5, tokenize_characters=False, ignore_blacklist=False):
 		matches = self.get_matches(document, document_id, entity_types, auto_detect, allow_overlap, protect_tags, max_tokens, tokenize_characters, ignore_blacklist)
