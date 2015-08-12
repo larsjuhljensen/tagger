@@ -289,9 +289,9 @@ class Tagger:
 		doc.append('</body>\n</html>\n')
 		return self.postprocess_document(document_id, ''.join(doc))
 	
-	def get_html(self, document, document_id, entity_types, auto_detect=True, allow_overlap=False, protect_tags=True, max_tokens=5, tokenize_characters=False, ignore_blacklist=False, basename='tagger', add_events=False, force_important=False, html_footer=''):
+	def get_html(self, document, document_id, entity_types, auto_detect=True, allow_overlap=False, protect_tags=True, max_tokens=5, tokenize_characters=False, ignore_blacklist=False, basename='tagger', add_events=False, extra_classes=False, force_important=False, html_footer=''):
 		matches = self.get_matches(document, document_id, entity_types, auto_detect, allow_overlap, protect_tags, max_tokens, tokenize_characters, ignore_blacklist)
-		return self.create_html(document, document_id, matches, basename=basename, add_events=add_events, force_important=force_important, html_footer=html_footer)
+		return self.create_html(document, document_id, matches, basename=basename, add_events=add_events, extra_classes=extra_classes, force_important=force_important, html_footer=html_footer)
 
 	def get_jsonld(self, document, document_id, annotation_index, entity_types, auto_detect=True, allow_overlap=False, protect_tags=True, max_tokens=5, tokenize_characters=False, ignore_blacklist=False):
 		matches = self.get_matches(document, document_id, entity_types, auto_detect, allow_overlap, protect_tags, max_tokens, tokenize_characters, ignore_blacklist)
