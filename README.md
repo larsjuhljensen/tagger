@@ -167,9 +167,14 @@ Only stopwords with t in the second column are used as stopwords.  This format m
 
 The groups file, specified with the --groups command line argument contains the orthology groups of proteins that should be treated as the same protein.  For example, if we are interested in tagging the human protein CDK1, and we know that humans are similar enough to mice that a paper containing findings about the mouse CDK1 are likely to also be applicable to the human CDK1.  We specify "similar enough", using the groups file to say that human CDK1 and mouse CDK1 are in the same orthology group.
 
+More generally, the groups file can be used for species, diseases, etc ontologies.  
+
 The format of the groups file is as follows
 
-* LARS, what is the format?
+* child
+* parent
+
+Specify each edge of the tree (child -> parent; parent -> grandparent; child -> grandparent) in the groups file.  Non-tree-like edges (shortcuts) between nodes can be added manually.  
 
 
 #### Threads ####
