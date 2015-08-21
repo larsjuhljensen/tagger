@@ -8,7 +8,7 @@ This repository contains the code for tagcorpus, a C++ program that, most genera
 
 "Tagging" a document is the process of recording where in the document given entities are mentioned.  Often two types of information are tagged concurrently to find co-mentions.  For example, proteins and diseases, or human proteins and viral proteins.  
 
-Let's say you are interested in the human protein P53.  You want to find all the mentions of P53 in the literature.  However, P53 can be spelled in a variety of ways P53, P-53, p53, "Tumor protein p53", etc, so this is a harder problem than it originally seems.  This tagger will do some of this expansion automatically: case insensitivity, and adding dashes before terminal numbers.  LARS, is this complete?
+Let's say you are interested in the human protein P53.  You want to find all the mentions of P53 in the literature.  However, P53 can be spelled in a variety of ways P53, P-53, p53, "Tumor protein p53", etc, so this is a harder problem than it originally seems.  This tagger will do some of this expansion automatically: case insensitivity, and adding dashes before terminal numbers.  
 
 
 ## Running tagcorpus ##
@@ -60,8 +60,8 @@ The entities file contains the following three tab separated columns:
 | Type | entity type              |
 | ---- | ------------------------ |
 | -1   | chemicals                |
-| -2   | ????                     |
-| -3   | NCBI species taxonomy id |
+| -2   | NCBI species taxonomy id (tagging species) |
+| -3   | NCBI species taxonomy id (tagging proteins) |
 | -11  | Wikipedia                |
 | -21  | GO biological process    |
 | -22  | GO cellular component    |
@@ -75,7 +75,7 @@ The entities file contains the following three tab separated columns:
 | -30  | MPheno phenotypes        |
 | -31  | NBO behaviors            |
 
-
+The difference between -2 and -3 is as follows.  Use -2 if you are only interested in tagging species.  Use -3 if you ultimately want to tag proteins -- -3 will turn on autodetect, which will add another tagging step in which your document will be tagged for the species you specify, and then will be tagged again for proteins.  Protein mentions must occur near mentions of their species to be recorded (so that protein names that are the same across different species are not confused for each other).  (Use the --groups option if you DO want to allow proteins of the same name in certain species to be considered the same entity, for example mouse CDK1 and human CDK1 which are close orthologs.)
 
 Some examples:
 
@@ -119,7 +119,7 @@ Then, in the human and influenza protein example, I would specify a line contain
 * 9606
 * 11320
 
-Order in this file doesn't matter (LARS, please confirm).
+Order in this file doesn't matter.
 
 As a further example, if I wanted to pair human proteins with diseases, I would specify
 
@@ -143,7 +143,7 @@ These values can be set with the --document-weight, --paragraph-weight, --senten
 
 --organism=ncbitaxid
 
-This is equivalent to specifying the species entities in the entities file.  LARS, please verify.
+This is equivalent to specifying the species entities in the entities file. Specifying an organism turns off autodectect (which was turned on by specifying entities of type -3). 
 
 
 
@@ -154,7 +154,7 @@ This is equivalent to specifying the species entities in the entities file.  LAR
 
 Some of the synonyms that are specified in the names file may match more than just occurrences of the gene.  For example, there are human genes named RAN, etc.  We don't want to match every instance that a researcher "ran a gel", so we can explicitly specify 'ran' as a stopword.  
 
-The tagger is case sensitive, so the stopword 'ran' will match exactly this string, but RAN will continue to be tagged as a gene.  LARS, please verify.
+The tagger is case sensitive, so the stopword 'ran' will match exactly this string, but RAN will continue to be tagged as a gene.
 
 The format of the stopwords file is two tab separated columns:
 
