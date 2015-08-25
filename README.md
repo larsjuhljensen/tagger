@@ -53,12 +53,13 @@ The entities file specifies some metadata about the things (called entities) tha
 The entities file contains the following three tab separated columns:
 
 1. **serialno**, a unique positive integer.  Serial numbers do not need to occur in sorted order, they just need to be unique.
-2. **entity type**, an integer that specifies what kind of thing (protein, species, disease, ...) the entity is.  If the entity is a species, it's entity type will be its NCBI taxonomic identifier.  All other types have negative entity types, as specified below.
+2. **entity type**, an integer that specifies what kind of thing (protein, species, disease, ...) the entity is.  If the entity is a protein for a specific species, it's entity type will be the NCBI taxonomic identifier of the species.  All other types have negative entity types, as specified below.
 3. **your identifier** for the entity.  If it's a protein, this is the string identifier, without the ncbitaxid prepended. 
 
 
 | Type | entity type              |
 | ---- | ------------------------ |
+| any > 0 | Proteins of species with this NCBI tax id |
 | -1   | chemicals                |
 | -2   | NCBI species taxonomy id (tagging species) |
 | -3   | NCBI species taxonomy id (tagging proteins) |
