@@ -27,6 +27,7 @@ class GetMatchesParams
 		
 	public:
 		void add_entity_type(int entity_type);
+        void load_entity_types(const char* types_filename);
 };
 
 class Tagger
