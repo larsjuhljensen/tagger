@@ -3,6 +3,7 @@
 
 #include <boost/regex.hpp>
 #include <iostream>
+#include <vector>
 
 #include "acronyms.h"
 #include "file.h"
@@ -19,6 +20,40 @@ GetMatchesParams::GetMatchesParams()
 	this->protect_tags        = false;
 	this->tokenize_characters = false;
 	this->max_tokens          = 15;
+}
+
+vector<int> parse_types(const char* types_filename) {
+	vector<int> entity_types;
+	if (types_filename == NULL) {
+		vector<int> null(0);
+		return null;
+	}
+	InputFile types_file(types_filename);
+	while (true) {
+		vector<char *> fields = types_file.get_fields();
+		int size = fields.size();
+		if (size == 0) {
+			break;
+		}
+		if (size >= 1) {
+			int type_int;
+			type_int = atoi(fields[0]);
+			entity_types.push_back(type_int);
+		}
+	}
+	return entity_types;
+}
+
+GetMatchesParams::GetMatchesParams(const char* types_filename)
+{
+    this->auto_detect         = true;
+	this->allow_overlap       = false;
+	this->find_acronyms       = true;
+	this->protect_tags        = false;
+	this->tokenize_characters = false;
+	this->max_tokens          = 15;
+
+    this->entity_types = parse_types(types_filename);
 }
 
 void GetMatchesParams::add_entity_type(int entity_type)

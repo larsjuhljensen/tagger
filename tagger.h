@@ -23,6 +23,7 @@ class GetMatchesParams
 		
 	public:
 		GetMatchesParams();
+		GetMatchesParams(const char*);
 		
 	public:
 		void add_entity_type(int entity_type);

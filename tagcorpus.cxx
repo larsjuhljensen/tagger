@@ -4,11 +4,9 @@
 #include "print_handlers.h"
 #include "score_handlers.h"
 #include "threaded_batch_tagger.h"
-#include "file.h"
 
 #include <fstream>
 #include <iostream>
-#include <vector>
 
 extern "C"
 {
@@ -31,33 +29,8 @@ int validate_opt(char* var) {
 	return strcmp(var, "");
 }
 
-vector<int> parse_types(const char* types_filename) {
-	vector<int> entity_types;
-	if (types_filename == NULL) {
-		vector<int> null(0);
-		return null;
-	}
-	InputFile types_file(types_filename);
-	while (true) {
-		vector<char *> fields = types_file.get_fields();
-		int size = fields.size();
-		if (size == 0) {
-			break;
-		}
-		if (size >= 1) {
-			int type_int;
-			type_int = atoi(fields[0]);
-			entity_types.push_back(type_int);
-		}
-	}
-	return entity_types;
-}
-
-
-
 int main (int argc, char *argv[])
 {
-	GetMatchesParams params;
 	MetaBatchHandler batch_handler;
 	ThreadedBatchTagger batch_tagger;
 
@@ -269,8 +242,8 @@ int main (int argc, char *argv[])
 		}
 	}
 	
+	GetMatchesParams params(types);
 	params.auto_detect = autodetect;
-	params.entity_types = parse_types(types);
 
 	batch_tagger.process(threads, document_reader, params, &batch_handler);
 	cerr << endl << "# Batch done." << endl;
