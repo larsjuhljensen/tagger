@@ -4,13 +4,15 @@
 #include "print_handlers.h"
 #include "score_handlers.h"
 #include "threaded_batch_tagger.h"
+#include "file.h"
 
 #include <fstream>
 #include <iostream>
+#include <vector>
 
 extern "C"
 {
-    #include <getopt.h>
+	#include <getopt.h>
 }
 
 #define MAXFILENAMELEN 256
@@ -18,16 +20,40 @@ extern "C"
 using namespace std;
 
 int validate_req (char* var, const char name[]) {
-    if (strcmp(var, "") == 0) {
-        printf("Must specify %s file with --%s=filename\n", name, name);
-        exit(1);
-    }
-    return 1;
+	if (strcmp(var, "") == 0) {
+		printf("Must specify %s file with --%s=filename\n", name, name);
+		exit(1);
+	}
+	return 1;
 }
 
 int validate_opt(char* var) {
-    return strcmp(var, "");
+	return strcmp(var, "");
 }
+
+vector<int> parse_types(const char* types_filename) {
+	vector<int> entity_types;
+	if (types_filename == NULL) {
+		vector<int> null(0);
+		return null;
+	}
+	InputFile types_file(types_filename);
+	while (true) {
+		vector<char *> fields = types_file.get_fields();
+		int size = fields.size();
+		if (size == 0) {
+			break;
+		}
+		if (size >= 1) {
+			int type_int;
+			type_int = atoi(fields[0]);
+			entity_types.push_back(type_int);
+		}
+	}
+	return entity_types;
+}
+
+
 
 int main (int argc, char *argv[])
 {
@@ -36,47 +62,48 @@ int main (int argc, char *argv[])
 	ThreadedBatchTagger batch_tagger;
 
 	// some default values for the command line arguments
-	int threads = 1;
-	char documents[MAXFILENAMELEN] = "";
+	char types[MAXFILENAMELEN] = "";
 	char entities[MAXFILENAMELEN] = "";
 	char names[MAXFILENAMELEN] = "";
+	char documents[MAXFILENAMELEN] = "";
 	char groups[MAXFILENAMELEN] = "";
-	char stopwords[MAXFILENAMELEN] = "";
-	int organism = 9606;
-	bool autodetect = true;
 	char type_pairs[MAXFILENAMELEN] = "";
-	char out_matches[MAXFILENAMELEN] = "";
-	char out_pairs[MAXFILENAMELEN] = "";
+	char stopwords[MAXFILENAMELEN] = "";
+	bool autodetect = false;
 	float document_weight = 1;
 	float paragraph_weight = 2;
 	float sentence_weight = 0.2;
 	float normalization_factor = 0.6;
+	int threads = 1;
+	char out_matches[MAXFILENAMELEN] = "";
+	char out_pairs[MAXFILENAMELEN] = "";
 	
 	int c; // parse command line arguments
 	while (1) {
 		static struct option long_options[] =
 		{
-			{"threads", optional_argument, 0, 't'},
+			{"types", required_argument, 0, 'y'},
 			{"entities", required_argument, 0, 'e'},
 			{"names", required_argument, 0, 'n'},
+			{"documents", optional_argument, 0, 'i'},
 			{"groups", optional_argument, 0, 'g'},
+			{"type-pairs", optional_argument, 0, 'p'},
 			{"stopwords", optional_argument, 0, 's'},
-			{"organism", optional_argument, 0, 'o'},
+			{"autodetect", no_argument, 0, 'u'},
 			{"document-weight", optional_argument, 0, 'd'},
 			{"paragraph-weight", optional_argument, 0, 'r'},
 			{"sentence-weight", optional_argument, 0, 'c'},
 			{"normalization-factor", optional_argument, 0, 'f'},
-			{"type-pairs", optional_argument, 0, 'p'},
+			{"threads", optional_argument, 0, 't'},
 			{"out-matches", optional_argument, 0, 'm'},
 			{"out-pairs", optional_argument, 0, 'a'},
-			{"documents", optional_argument, 0, 'i'},
 			{"help", no_argument, 0, 'h'},
 			{0, 0, 0, 0}
 		};
 		
 		int option_index = 0;
 		
-		c = getopt_long (argc, argv, "t:e:n:g:s:o:d:r:c:f:o:m:a:l:h:", long_options, &option_index);
+		c = getopt_long (argc, argv, "y:e:n:i:g:p:s:u:d:r:c:f:t:m:a:h:", long_options, &option_index);
 		
 		/* Detect the end of the options. */
 		if (c == -1)
@@ -87,30 +114,31 @@ int main (int argc, char *argv[])
 			case 'h':
 				printf("Usage: %s [OPTIONS]\n", argv[0]);
 				printf("Required Arguments\n");
+				printf("\t--types=filename\n");
 				printf("\t--entities=filename\n");
 				printf("\t--names=filename\n");
 				printf("Optional Arguments\n");
 				printf("\t--documents=filename\tRead input from file instead of from STDIN\n");
-				printf("\t--threads=%d\n", threads);
+				printf("\t--groups=filename\n");
+				printf("\t--type-pairs=filename\tTypes of pairs that are allowed\n");
 				printf("\t--stopwords=filename\n");
-				printf("\t--organism=%d\n", organism);
+				printf("\t--autodetect Turn autodetect on\n");
 				printf("\t--document-weight=%1.2f\n", document_weight);
 				printf("\t--paragraph-weight=%1.2f\n", paragraph_weight);
 				printf("\t--sentence-weight=%1.2f\n", sentence_weight);
 				printf("\t--normalization-factor=%1.2f\n", normalization_factor);
-				printf("\t--type-pairs=filename\tTypes of pairs that are allowed\n");
-				printf("\t--groups=filename\n");
+				printf("\t--threads=%d\n", threads);
 				printf("\t--out-matches=filename\n");
 				printf("\t--out-pairs=filename\n");
 				exit(0);
 				break;
 			
-			case 't':
+			case 'y':
 				if (optarg) {
-					threads = atoi(optarg);
+					strncpy(types, optarg, min(MAXFILENAMELEN, int(sizeof(types))));
 				}
 				break;
-			
+
 			case 'e':
 				if (optarg) {
 					strncpy(entities, optarg, min(MAXFILENAMELEN, int(sizeof(entities))));
@@ -123,9 +151,21 @@ int main (int argc, char *argv[])
 				}
 				break;
 			
+			case 'i':
+				if (optarg) {
+					strncpy(documents, optarg, min(MAXFILENAMELEN, int(sizeof(documents))));
+				}
+				break;
+			
 			case 'g':
 				if (optarg) {
 					strncpy(groups, optarg, min(MAXFILENAMELEN, int(sizeof(groups))));
+				}
+				break;
+			
+			case 'p':
+				if (optarg) {
+					strncpy(type_pairs, optarg, min(MAXFILENAMELEN, int(sizeof(type_pairs))));
 				}
 				break;
 			
@@ -135,11 +175,8 @@ int main (int argc, char *argv[])
 				}
 				break;
 			
-			case 'o':
-				if (optarg) {
-					organism = atoi(optarg);
-					autodetect = false;
-				}
+			case 'u':
+				autodetect = true;
 				break;
 			
 			case 'd':
@@ -166,6 +203,12 @@ int main (int argc, char *argv[])
 				}
 				break;
 			
+			case 't':
+				if (optarg) {
+					threads = atoi(optarg);
+				}
+				break;
+
 			case 'm':
 				if (optarg) {
 					strncpy(out_matches, optarg, min(MAXFILENAMELEN, int(sizeof(out_matches))));
@@ -175,18 +218,6 @@ int main (int argc, char *argv[])
 			case 'a':
 				if (optarg) {
 					strncpy(out_pairs, optarg, min(MAXFILENAMELEN, int(sizeof(out_pairs))));
-				}
-				break;
-			
-			case 'p':
-				if (optarg) {
-					strncpy(type_pairs, optarg, min(MAXFILENAMELEN, int(sizeof(type_pairs))));
-				}
-				break;
-			
-			case 'i':
-				if (optarg) {
-					strncpy(documents, optarg, min(MAXFILENAMELEN, int(sizeof(documents))));
 				}
 				break;
 			
@@ -200,6 +231,7 @@ int main (int argc, char *argv[])
 	
 	}
 	
+	validate_req(types, "types");
 	validate_req(entities, "entities");
 	validate_req(names, "names");
 	
@@ -238,25 +270,8 @@ int main (int argc, char *argv[])
 	}
 	
 	params.auto_detect = autodetect;
-	params.entity_types.push_back(organism);	// STRING human proteins. 
-	params.entity_types.push_back(-1);		// STITCH chemicals.
-	params.entity_types.push_back(-2);		// NCBI taxonomy.
-	params.entity_types.push_back(-11);		// Wikipedia.
-	params.entity_types.push_back(-20);		// OBO default type.
-	params.entity_types.push_back(-21);		// GO biological process.
-	params.entity_types.push_back(-22);		// GO cellular component.
-	params.entity_types.push_back(-23);		// GO molecular function.
-	params.entity_types.push_back(-24);		// GO other (unused).
-	params.entity_types.push_back(-25);		// BTO tissues.
-	params.entity_types.push_back(-26);		// DOID diseases.
-	params.entity_types.push_back(-27);		// ENVO environments.
-	params.entity_types.push_back(-28);		// APO phenotypes.
-	params.entity_types.push_back(-29);		// FYPO phenotypes.
-	params.entity_types.push_back(-30);		// MPheno phenotypes.
-	params.entity_types.push_back(-31);		// NBO behaviors.
-	params.entity_types.push_back(-32);
-	params.entity_types.push_back(-33);
-	
+	params.entity_types = parse_types(types);
+
 	batch_tagger.process(threads, document_reader, params, &batch_handler);
 	cerr << endl << "# Batch done." << endl;
 	
