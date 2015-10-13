@@ -32,11 +32,11 @@ and then ensure tagcorpus is in your path.
 
 ### Input Files and Options ###
 
-You will need several input files to run tagcorpus.  Documents, entities and names are required, and the others are optional.
+You will need several input files to run tagcorpus.  Documents, entities, names and types are required, and the others are optional.
 
-There are two modes that tagcorpus can be run in, auto-detect and no auto-detect. 
+There are two modes that tagcorpus can be run in, auto-detect and no auto-detect.  Autodetect is specified with the --autodetect option and is by default off.  See below for more details.
 
-By default, proteins are assumed to be human proteins if no specifying organism is mentioned.
+By default, proteins are assumed to be human proteins if no other species (positive integers) are given in the types file.
 
 #### Documents ####
 
@@ -44,18 +44,9 @@ The documents to be searched are by default provided on stdin, unless a file is 
 
 If you are using the CPR server infrastructure, the Medline documents are available under /home/purple1/databases/Medline
 
-#### Entities ####
+#### Types ####
 
-Specified with the --entities command line option.
-
-The entities file specifies some metadata about the things (called entities) that you want to tag.  These can be proteins, species, diseases, tissues, chemicals and drugs, GO terms, etc.  There should be a line in this file for each entity that you want to tag.  
-
-The entities file contains the following three tab separated columns:
-
-1. **serialno**, a unique positive integer.  Serial numbers do not need to occur in sorted order, they just need to be unique.
-2. **entity type**, an integer that specifies what kind of thing (protein, species, disease, ...) the entity is.  If the entity is a protein for a specific species, it's entity type will be the NCBI taxonomic identifier of the species.  All other types have negative entity types, as specified below.
-3. **your identifier** for the entity.  If it's a protein, this is the string identifier, without the ncbitaxid prepended. 
-
+Specified with the --types command line option.  Types is a tab delimited file that contains the integer representing the types of entities you are interested in tagging.  
 
 | Type | entity type              |
 | ---- | ------------------------ |
@@ -77,6 +68,20 @@ The entities file contains the following three tab separated columns:
 | -31  | NBO behaviors            |
 
 The difference between -2 and -3 is as follows.  Use -2 if you are only interested in tagging species.  Use -3 if you ultimately want to tag proteins -- -3 will turn on autodetect, which will add another tagging step in which your document will be tagged for the species you specify, and then will be tagged again for proteins.  Protein mentions must occur near mentions of their species to be recorded (so that protein names that are the same across different species are not confused for each other).  (Use the --groups option if you DO want to allow proteins of the same name in certain species to be considered the same entity, for example mouse CDK1 and human CDK1 which are close orthologs.)
+
+
+#### Entities ####
+
+Specified with the --entities command line option.
+
+The entities file specifies some metadata about the things (called entities) that you want to tag.  These can be proteins, species, diseases, tissues, chemicals and drugs, GO terms, etc.  There should be a line in this file for each entity that you want to tag.  
+
+The entities file contains the following three tab separated columns:
+
+1. **serialno**, a unique positive integer.  Serial numbers do not need to occur in sorted order, they just need to be unique.
+2. **entity type**, an integer that specifies what kind of thing (protein, species, disease, ...) the entity is.  If the entity is a protein for a specific species, it's entity type will be the NCBI taxonomic identifier of the species.  All other types have negative entity types, as specified below.
+3. **your identifier** for the entity.  If it's a protein, this is the string identifier, without the ncbitaxid prepended. 
+
 
 Some examples:
 
@@ -140,15 +145,16 @@ Where . is shorthand for "count over all entities of the given type".
 These values can be set with the --document-weight, --paragraph-weight, --sentence-weight and --normalization-factor command line options respectively.
 
 
-#### Organism ####
+#### Deprecated: Organism ####
 
 --organism=ncbitaxid
 
 This is equivalent to specifying the species entities in the entities file. Specifying an organism turns off autodectect (which was turned on by specifying entities of type -3). 
 
 
+#### Autodetect ####
 
-
+--autodetect will turn on autodetect.  
 
 
 #### Stopwords ####
