@@ -22,6 +22,22 @@ GetMatchesParams::GetMatchesParams()
 	this->max_tokens          = 15;
 }
 
+GetMatchesParams::GetMatchesParams(const char* types_filename)
+{
+    this->auto_detect         = true;
+	this->allow_overlap       = false;
+	this->find_acronyms       = true;
+	this->protect_tags        = false;
+	this->tokenize_characters = false;
+	this->max_tokens          = 15;
+    this->load_entity_types(types_filename);
+}
+
+void GetMatchesParams::add_entity_type(int entity_type)
+{
+	this->entity_types.push_back(entity_type);
+}
+
 void GetMatchesParams::load_entity_types(const char* types_filename) {
 	InputFile types_file(types_filename);
 	while (true) {
@@ -36,23 +52,6 @@ void GetMatchesParams::load_entity_types(const char* types_filename) {
 			this->entity_types.push_back(type_int);
 		}
 	}
-}
-
-GetMatchesParams::GetMatchesParams(const char* types_filename)
-{
-    this->auto_detect         = true;
-	this->allow_overlap       = false;
-	this->find_acronyms       = true;
-	this->protect_tags        = false;
-	this->tokenize_characters = false;
-	this->max_tokens          = 15;
-
-    this->load_entity_types(types_filename);
-}
-
-void GetMatchesParams::add_entity_type(int entity_type)
-{
-	this->entity_types.push_back(entity_type);
 }
 
 Tagger::Tagger(bool serials_only, const char* pattern)
