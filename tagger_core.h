@@ -22,12 +22,7 @@ GetMatchesParams::GetMatchesParams()
 	this->max_tokens          = 15;
 }
 
-vector<int> parse_types(const char* types_filename) {
-	vector<int> entity_types;
-	if (types_filename == NULL) {
-		vector<int> null(0);
-		return null;
-	}
+void GetMatchesParams::load_entity_types(const char* types_filename) {
 	InputFile types_file(types_filename);
 	while (true) {
 		vector<char *> fields = types_file.get_fields();
@@ -38,10 +33,9 @@ vector<int> parse_types(const char* types_filename) {
 		if (size >= 1) {
 			int type_int;
 			type_int = atoi(fields[0]);
-			entity_types.push_back(type_int);
+			this->entity_types.push_back(type_int);
 		}
 	}
-	return entity_types;
 }
 
 GetMatchesParams::GetMatchesParams(const char* types_filename)
@@ -53,7 +47,7 @@ GetMatchesParams::GetMatchesParams(const char* types_filename)
 	this->tokenize_characters = false;
 	this->max_tokens          = 15;
 
-    this->entity_types = parse_types(types_filename);
+    this->load_entity_types(types_filename);
 }
 
 void GetMatchesParams::add_entity_type(int entity_type)
