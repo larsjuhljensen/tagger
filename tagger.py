@@ -174,7 +174,7 @@ class Tagger:
 					text = document[match[0]:match[1]+1]
 					if text not in uniq:
 						uniq[text] = []
-				uniq[text].append(match)
+					uniq[text].append(match)
 			doc.append('<?xml version="1.0" encoding="UTF-8"?>')
 			doc.append('<GetEntitiesResponse xmlns="Reflect" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">')
 			doc.append('<items>')
