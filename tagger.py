@@ -295,17 +295,20 @@ class Tagger:
 
 	def get_jsonld(self, document, document_id, annotation_index, entity_types, auto_detect=True, allow_overlap=False, protect_tags=True, max_tokens=5, tokenize_characters=False, ignore_blacklist=False):
 		matches = self.get_matches(document, document_id, entity_types, auto_detect, allow_overlap, protect_tags, max_tokens, tokenize_characters, ignore_blacklist)
+		base = "_:"
+		if document_id != None:
+			base = document_id
 		data = {}
 		data["@context"] = "http://nlplab.org/ns/restoa-context-20150307.json"
 		if annotation_index == None:
-			data["@id"] = "%s/annotations/" % document_id
+			data["@id"] = "_:annotations" % document_id
 			data["@graph"] = []
 			i = 0
 			for match in matches:
 				if match[2] != None:
 					annotation = {}
-					annotation["@id"] = "%s/annotations/%d" % (document_id, i)
-					annotation["target"] = "%s#char=%d,%d" % (document_id, match[0], match[1]+1)
+					annotation["@id"] = "_:annotations/%d" % i
+					annotation["target"] = "%s#char=%d,%d" % (base, match[0], match[1]+1)
 					if len(match[2]) == 1:
 						annotation["body"] = {"@id" : match[2][0][1]}
 					else:
@@ -313,12 +316,12 @@ class Tagger:
 					data["@graph"].append(annotation)
 					i += 1
 		else:
-			data["@id"] = "%s/annotations/%d" % (document_id, annotation_index)
+			data["@id"] = "_:annotations/%d" % annotation_index
 			i = 0;
 			for match in matches:
 				if match[2] != None:
 					if i == int(annotation_index):
-						data["target"] = "%s#char=%d,%d" % (document_id, match[0], match[1]+1)
+						data["target"] = "%s#char=%d,%d" % (base, match[0], match[1]+1)
 						if len(match[2]) == 1:
 							data["body"] = {"@id" : match[2][0][1]}
 						else:
