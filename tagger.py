@@ -301,7 +301,7 @@ class Tagger:
 		data = {}
 		data["@context"] = "http://nlplab.org/ns/restoa-context-20150307.json"
 		if annotation_index == None:
-			data["@id"] = "_:annotations" % document_id
+			data["@id"] = "_:annotations"
 			data["@graph"] = []
 			i = 0
 			for match in matches:
