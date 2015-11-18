@@ -13,6 +13,21 @@ import xml.sax.saxutils
 import tagger_swig
 
 
+def entity_dict(qtype, qid):
+	data = {}
+        if qtype >= 0:
+                data = {"@id" : "stringdb:%d.%s" % (qtype, qid)}
+        elif qtype == -1:
+                data = {"@id" : "stitchdb:%s" % qid}
+        elif qtype == -2:
+                data = {"@id" : "taxonomy:%s" % qid}
+	elif ":" in qid:
+		data = {"@id" : qid}
+        else:
+                data = {"@id" : "_:%s" % qid}
+        return data
+
+
 class Tagger:
 	
 	def __init__(self, java_script=None):
@@ -315,9 +330,9 @@ class Tagger:
 					annotation["@id"] = "_:annotations/%d" % i
 					annotation["target"] = "%s#char=%d,%d" % (base, offsets[match[0]], offsets[match[1]]+1)
 					if len(match[2]) == 1:
-						annotation["body"] = {"@id" : match[2][0][1]}
+						annotation["body"] = entity_dict(match[2][0][0], match[2][0][1])
 					else:
-						annotation["body"] = [{"@id" : entity_identifier} for entity_type, entity_identifier in match[2]]
+						annotation["body"] = [entity_dict(entity_type, entity_identifier) for entity_type, entity_identifier in match[2]]
 					data["@graph"].append(annotation)
 					i += 1
 		else:
@@ -328,9 +343,9 @@ class Tagger:
 					if i == int(annotation_index):
 						data["target"] = "%s#char=%d,%d" % (base, offsets[match[0]], offsets[match[1]]+1)
 						if len(match[2]) == 1:
-							data["body"] = {"@id" : match[2][0][1]}
+							data["body"] = entity_dict(match[2][0][0], match[2][0][1])
 						else:
-							data["body"] = [{"@id" : entity_identifier} for entity_type, entity_identifier in match[2]]
+							data["body"] = [entity_dict(entity_type, entity_identifier) for entity_type, entity_identifier in match[2]]
 						break
 					i += 1
 		return json.dumps(data, separators=(',',':'), sort_keys=True)
