@@ -319,7 +319,7 @@ class Tagger:
                 	offsets[byte_offset] = char_offset
                 	byte_offset += len(char.encode(document_charset))
 		data = {}
-		data["@context"] = "http://nlplab.org/ns/restoa-context-20150307.json"
+		data["@context"] = ["http://nlplab.org/ns/restoa-context-20150307.json",  "http://nlplab.org/ns/bio-20151118.jsonld"]
 		if annotation_index == None:
 			data["@id"] = "_:annotations"
 			data["@graph"] = []
