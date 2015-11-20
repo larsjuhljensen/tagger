@@ -310,7 +310,7 @@ void ScoreBatchHandler::on_batch_end()
 		double s     = type_type_score[type1][type2];
 		double ratio = (s_ij * s)/(s_i * s_j);
 		double score = pow(s_ij, this->factor_exponent) * pow(ratio, 1 - this->factor_exponent);
-		fprintf(this->file, "%d\t%d\t%f\t%f\t%f\t%f\t%f\t%f\n", serial1, serial2, score, ratio, s, s_i, s_j, s_ij);
+		fprintf(this->file, "%u\t%u\t%f\t%f\t%f\t%f\t%f\t%f\n", serial1, serial2, score, ratio, s, s_i, s_j, s_ij);
 	}
 }
 

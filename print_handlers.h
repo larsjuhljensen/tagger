@@ -95,7 +95,7 @@ void PrintBatchHandler::print(Document* document, int paragraph, int sentence, M
 	document->text[match->stop+1] = '\0';
 	Entity* entity = match->entities;
 	for (int i = 0; i < match->size; i++) {
-		fprintf(this->file, "%d\t%d\t%d\t%d\t%d\t%s\t%d\t%d\n", document->key, paragraph, sentence, match->start, match->stop, (const char*)(document->text+match->start), entity->type, entity->id.serial);
+		fprintf(this->file, "%d\t%d\t%d\t%d\t%d\t%s\t%d\t%u\n", document->key, paragraph, sentence, match->start, match->stop, (const char*)(document->text+match->start), entity->type, entity->id.serial);
 		entity++;
 	}
 	document->text[match->stop+1] = replaced;
