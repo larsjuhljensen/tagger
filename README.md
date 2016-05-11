@@ -178,6 +178,10 @@ Thus, groups have an impact on named entity recognition (NER) and on disambiguat
 
 Regarding disambiguation, if a protein name is recognized that normalizes to two different entities, then neither entity will be returned.  However, if the entities are in the same group, then both entities will be returned.  For example, the protein TP53 is called "TP53" in both mouse and human, and these proteins are orthologs, so a mention of "TP53" in text will result in both the human and mouse TP53 entities being returned. 
 
+If you want to have results returned for the groups (as opposed to just using them to return more results), then these entities must be specified in the types and type-pairs files.
+
+Adding groups will not change the scoring, but will return more matches (of different types), because the scoring is based on type and the number of matches of each type will not change. 
+
 The format of the groups file is as follows
 
 * child
