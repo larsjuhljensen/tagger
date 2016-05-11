@@ -172,9 +172,11 @@ Only stopwords with t in the second column are used as stopwords.  This format m
 
 #### Groups ####
 
-The groups file, specified with the --groups command line argument contains the orthology groups of proteins that should be treated as the same protein.  For example, if we are interested in tagging the human protein CDK1, and we know that humans are similar enough to mice that a paper containing findings about the mouse CDK1 are likely to also be applicable to the human CDK1.  We specify "similar enough", using the groups file to say that human CDK1 and mouse CDK1 are in the same orthology group.
+The groups file, specified with the --groups command line argument contains the orthology groups of proteins that should be treated as the same protein (and analogously for other entity types like tissues from BTO, diseases, etc).  For example, if we are interested in tagging the human protein CDK1, and we know that humans are similar enough to mice that a paper containing findings about the mouse CDK1 are likely to also be applicable to the human CDK1.  We specify "similar enough", using the groups file to say that human CDK1 and mouse CDK1 are in the same orthology group.
 
-More generally, the groups file can be used for species, diseases, etc ontologies.  
+Thus, groups have an impact on named entity recognition (NER) and on disambiguation.  Each group must be added as an entity, but it doesn't necessarily need to have any names associated with it. For OGs, the group will have the type of the taxid that the OG is calculated at (mammals, metazoa, etc).  
+
+Regarding disambiguation, if a protein name is recognized that normalizes to two different entities, then neither entity will be returned.  However, if the entities are in the same group, then both entities will be returned.  For example, the protein TP53 is called "TP53" in both mouse and human, and these proteins are orthologs, so a mention of "TP53" in text will result in both the human and mouse TP53 entities being returned. 
 
 The format of the groups file is as follows
 
