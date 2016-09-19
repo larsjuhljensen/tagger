@@ -224,7 +224,7 @@ Example: specify stopwords and pairs, and output pairs output to a file called o
 ~~~~
 gzip -cd `ls -1r /home/purple1/databases/Medline/*.tsv.gz` | tagcorpus --entities=entities \\
 --names=names --stopwords=all_global.tsv --type-pairs=typepairs --threads=16 \\
---out-pairs=output-pairs > output-mentions
+--out-pairs=output-pairs --types=types > output-mentions
 ~~~~
 
 ## TODO ##
