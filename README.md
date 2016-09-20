@@ -30,6 +30,8 @@ make
 
 and then ensure tagcorpus is in your path.
 
+Alternatively, you can download a Docker image with the tagger already compiled.
+
 ### Input Files and Options ###
 
 You will need several input files to run tagcorpus.  Documents, entities, names and types are required, and the others are optional.
