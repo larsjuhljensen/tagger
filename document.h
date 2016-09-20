@@ -9,11 +9,10 @@
 #include <fstream>
 #include <iostream>
 #include <sys/types.h>
-#include <tr1/unordered_set>
-#include <tr1/unordered_map>
+#include <unordered_set>
+#include <unordered_map>
 
 using namespace std;
-using namespace std::tr1;
 
 struct Segment
 {

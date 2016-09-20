@@ -3,13 +3,12 @@
 
 #include <list>
 #include <vector>
-#include <tr1/unordered_map>
+#include <unordered_map>
 
 #include "hash.h"
 #include "tightvector.h"
 
 using namespace std;
-using namespace std::tr1;
 
 typedef unsigned int SERIAL;
 

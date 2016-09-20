@@ -3,7 +3,7 @@
 
 #include <list>
 #include <vector>
-#include <tr1/unordered_set>
+#include <unordered_set>
 #include <boost/regex.hpp>
 
 #include "tagger_types.h"

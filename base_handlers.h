@@ -5,7 +5,6 @@
 #include "tagger_types.h"
 
 using namespace std;
-using namespace std::tr1;
 
 typedef vector<SERIAL> SERIALS;
 typedef unordered_set<SERIAL> ENTITY_SET;
@@ -15,6 +14,7 @@ class IBatchHandler;
 class IDocumentHandler
 {
 	public:
+		virtual ~IDocumentHandler() {};
 		virtual void on_batch_begin() = 0;
 		virtual void on_batch_end() = 0;
 		virtual void on_document_begin(Document& document) = 0;

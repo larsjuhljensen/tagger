@@ -2,17 +2,13 @@
 #define __REFLECT_HASH_HEADER__
 
 #include <cstring>
-#include <tr1/unordered_map>
+#include <unordered_map>
 
 using namespace std;
-using namespace std::tr1;
 
 namespace std
 {
-	namespace tr1
-	{
-		template<> size_t hash<const char*>::operator()(const char* val) const;
-	}
+	template<> size_t hash<const char*>::operator()(const char* val) const;
 }
 
 /* Simple string hash that does not allow for orthographic variation */

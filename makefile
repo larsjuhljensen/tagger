@@ -1,7 +1,7 @@
 CC     = g++
-CFLAGS = -fpic -Wall -O3
+CFLAGS = -fpic -Wall -O3 -std=c++11
 LFLAGS = -fpic -shared -lboost_regex
-PYTHON = -I/usr/include/python
+PYTHON = -I/usr/include/python2.7 -I/usr/include/python
 
 all: tagger_swig.py _tagger_swig.so libtagger.so libtagger.a tagcorpus cleandict environments organisms species
 

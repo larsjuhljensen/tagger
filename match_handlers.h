@@ -7,10 +7,9 @@
 
 #include <climits>
 #include <vector>
-#include <tr1/unordered_map>
+#include <unordered_map>
 
 using namespace std;
-using namespace std::tr1;
 
 typedef vector<SERIAL> SERIALS;
 typedef unordered_set<SERIAL> ENTITY_SET;
@@ -25,6 +24,7 @@ class EntityTypeMap : public unordered_map<SERIAL, int>
 class IMatchHandler
 {
 	public:
+		virtual ~IMatchHandler() {};
 		virtual void process(Matches& matches) = 0;
 };
 

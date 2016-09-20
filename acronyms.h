@@ -3,13 +3,12 @@
 
 #include <cstring>
 #include <vector>
-#include <tr1/unordered_map>
+#include <unordered_map>
 #include <boost/regex.hpp>
 
 #include "hash.h"
 
 using namespace std;
-using namespace std::tr1;
 using namespace boost;
 
 class Acronyms : public unordered_map<const char*, const char*, OrthographHash, OrthographHash::EqualString>
