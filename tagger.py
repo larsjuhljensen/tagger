@@ -7,8 +7,14 @@ import sys
 import tempfile
 import threading
 import time
-import urlparse
 import xml.sax.saxutils
+
+PY3 = sys.version_info >= (3,)
+
+if PY3:
+	from urllib.parse import urlparse
+else:
+	import urlparse
 
 import tagger_swig
 
@@ -315,7 +321,9 @@ class Tagger:
 			base = document_id
 		offsets = {}
 		byte_offset = 0
-		for char_offset, char in enumerate(document.decode(document_charset)):
+		if not PY3:
+			document = document.decode(document_charset)
+		for char_offset, char in enumerate(document):
                 	offsets[byte_offset] = char_offset
                 	byte_offset += len(char.encode(document_charset))
 		data = {}
