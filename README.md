@@ -68,6 +68,7 @@ Specified with the --types command line option.  Types is a tab delimited file t
 | -29  | FYPO phenotypes          |
 | -30  | MPheno phenotypes        |
 | -31  | NBO behaviors            |
+| -36  | mammalian phenotypes     |
 
 The difference between -2 and -3 is as follows.  Use -2 if you are only interested in tagging species.  Use -3 if you ultimately want to tag proteins -- -3 will turn on autodetect, which will add another tagging step in which your document will be tagged for the species you specify, and then will be tagged again for proteins.  Protein mentions must occur near mentions of their species to be recorded (so that protein names that are the same across different species are not confused for each other).  (Use the --groups option if you DO want to allow proteins of the same name in certain species to be considered the same entity, for example mouse CDK1 and human CDK1 which are close orthologs.)
 
