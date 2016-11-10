@@ -43,6 +43,7 @@ int main (int argc, char *argv[])
 	char type_pairs[MAXFILENAMELEN] = "";
 	char stopwords[MAXFILENAMELEN] = "";
 	bool autodetect = false;
+	bool tokenize_characters = false;
 	float document_weight = 1;
 	float paragraph_weight = 2;
 	float sentence_weight = 0.2;
@@ -63,6 +64,7 @@ int main (int argc, char *argv[])
 			{"type-pairs", optional_argument, 0, 'p'},
 			{"stopwords", optional_argument, 0, 's'},
 			{"autodetect", no_argument, 0, 'u'},
+			{"tokenize-characters", no_argument, 0, 'z'},
 			{"document-weight", optional_argument, 0, 'd'},
 			{"paragraph-weight", optional_argument, 0, 'r'},
 			{"sentence-weight", optional_argument, 0, 'c'},
@@ -96,6 +98,7 @@ int main (int argc, char *argv[])
 				printf("\t--type-pairs=filename\tTypes of pairs that are allowed\n");
 				printf("\t--stopwords=filename\n");
 				printf("\t--autodetect Turn autodetect on\n");
+				printf("\t--tokenize-characters Turn single-character tokenization on\n");
 				printf("\t--document-weight=%1.2f\n", document_weight);
 				printf("\t--paragraph-weight=%1.2f\n", paragraph_weight);
 				printf("\t--sentence-weight=%1.2f\n", sentence_weight);
@@ -151,6 +154,9 @@ int main (int argc, char *argv[])
 			case 'u':
 				autodetect = true;
 				break;
+			
+			case 'z':
+				tokenize_characters = true;
 			
 			case 'd':
 				if (optarg) {
@@ -244,6 +250,7 @@ int main (int argc, char *argv[])
 	
 	GetMatchesParams params(types);
 	params.auto_detect = autodetect;
+	params.tokenize_characters = tokenize_characters;
 
 	batch_tagger.process(threads, document_reader, params, &batch_handler);
 	cerr << endl << "# Batch done." << endl;

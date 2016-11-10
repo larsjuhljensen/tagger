@@ -24,13 +24,13 @@ GetMatchesParams::GetMatchesParams()
 
 GetMatchesParams::GetMatchesParams(const char* types_filename)
 {
-    this->auto_detect         = true;
+	this->auto_detect         = true;
 	this->allow_overlap       = false;
 	this->find_acronyms       = true;
 	this->protect_tags        = false;
 	this->tokenize_characters = false;
 	this->max_tokens          = 15;
-    this->load_entity_types(types_filename);
+	this->load_entity_types(types_filename);
 }
 
 void GetMatchesParams::add_entity_type(int entity_type)
