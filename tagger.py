@@ -22,15 +22,15 @@ import tagger_swig
 def entity_dict(qtype, qid):
     data = {}
     if qtype >= 0:
-        data = {"@id" : "stringdb:%d.%s" % (qtype, qid)}
+        data = {"@id": "stringdb:%d.%s" % (qtype, qid)}
     elif qtype == -1:
-        data = {"@id" : "stitchdb:%s" % qid}
+        data = {"@id": "stitchdb:%s" % qid}
     elif qtype == -2:
-        data = {"@id" : "taxonomy:%s" % qid}
+        data = {"@id": "taxonomy:%s" % qid}
     elif ":" in qid:
-        data = {"@id" : qid}
+        data = {"@id": qid}
     else:
-        data = {"@id" : "_:%s" % qid}
+        data = {"@id": "_:%s" % qid}
     return data
 
 
@@ -183,7 +183,7 @@ class Tagger:
         return self.cpp_tagger.get_matches(document, document_id, params)
 
     def get_entities(self, document, document_id, entity_types, auto_detect=True, allow_overlap=False, protect_tags=True, max_tokens=5, tokenize_characters=False, ignore_blacklist=False, format='xml'):
-        if format == None:
+        if format is None:
             format = 'xml'
         format = format.lower()
         matches = self.get_matches(document, document_id, entity_types, auto_detect, allow_overlap, protect_tags, max_tokens, tokenize_characters, ignore_blacklist)
@@ -191,7 +191,7 @@ class Tagger:
         if format == 'xml':
             uniq = {}
             for match in matches:
-                if match[2] != None:
+                if match[2] is not None:
                     text = document[match[0]:match[1]+1]
                     if text not in uniq:
                         uniq[text] = []
@@ -220,7 +220,7 @@ class Tagger:
             uniq = {}
             for match in matches:
                 text = document[match[0]:match[1]+1]
-                if match[2] != None:
+                if match[2] is not None:
                     for entity_type, entity_identifier in match[2]:
                         key = (text, entity_type, str(entity_identifier))
                         if key not in uniq:
@@ -254,7 +254,7 @@ class Tagger:
             length = match[0] - i
             if length > 0:
                 doc.append(document[i:match[0]])
-            if match[2] != None:
+            if match[2] is not None:
                 text = document[match[0]:match[1]+1]
                 str = []
                 match_classes = [basename+'_match']
@@ -317,7 +317,7 @@ class Tagger:
     def get_jsonld(self, document, document_charset, document_id, annotation_index, entity_types, auto_detect=True, allow_overlap=False, protect_tags=True, max_tokens=5, tokenize_characters=False, ignore_blacklist=False):
         matches = self.get_matches(document, document_id, entity_types, auto_detect, allow_overlap, protect_tags, max_tokens, tokenize_characters, ignore_blacklist)
         base = "_:"
-        if document_id != None:
+        if document_id is not None:
             base = document_id
         offsets = {}
         byte_offset = 0
@@ -328,12 +328,12 @@ class Tagger:
                     byte_offset += len(char.encode(document_charset))
         data = {}
         data["@context"] = ["http://nlplab.org/ns/restoa-context-20150307.json",  "http://nlplab.org/ns/bio-20151118.jsonld"]
-        if annotation_index == None:
+        if annotation_index is None:
             data["@id"] = "_:annotations"
             data["@graph"] = []
             i = 0
             for match in matches:
-                if match[0] in offsets and match[1] in offsets and match[2] != None:
+                if match[0] in offsets and match[1] in offsets and match[2] is not None:
                     annotation = {}
                     annotation["@id"] = "_:annotations/%d" % i
                     annotation["target"] = "%s#char=%d,%d" % (base, offsets[match[0]], offsets[match[1]]+1)
@@ -345,9 +345,9 @@ class Tagger:
                     i += 1
         else:
             data["@id"] = "_:annotations/%d" % annotation_index
-            i = 0;
+            i = 0
             for match in matches:
-                if match[0] in offsets and match[1] in offsets and match[2] != None:
+                if match[0] in offsets and match[1] in offsets and match[2] is not None:
                     if i == int(annotation_index):
                         data["target"] = "%s#char=%d,%d" % (base, offsets[match[0]], offsets[match[1]]+1)
                         if len(match[2]) == 1:
@@ -356,7 +356,7 @@ class Tagger:
                             data["body"] = [entity_dict(entity_type, entity_identifier) for entity_type, entity_identifier in match[2]]
                         break
                     i += 1
-        return json.dumps(data, separators=(',',':'), sort_keys=True)
+        return json.dumps(data, separators=(',', ':'), sort_keys=True)
 
     def resolve_name(self, name):
         return self.cpp_tagger.resolve_name(name)
