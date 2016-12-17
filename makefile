@@ -44,4 +44,4 @@ cleandict: cleandict.cxx acronyms.h file.h hash.h tagger.h tagger_core.h tagger_
 	$(CC) $(CFLAGS) -lboost_regex -pthread -o $@ $< -lm
 
 %: %.cxx acronyms.h document.h file.h hash.h mutex.h match_handlers.h base_handlers.h batch_tagger.h tagger.h tagger_core.h tagger_types.h tightvector.h tokens.h
-	$(CC) $(CFLAGS) -lboost_regex -o $@ $< -lm
+	$(CC) $(CFLAGS) -lboost_regex -pthread -o $@ $< -lm
