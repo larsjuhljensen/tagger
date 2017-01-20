@@ -60,11 +60,11 @@ class Tagger:
 		if os.path.exists(file):
 			for line in open(file):
 				tokens = line[:-1].split('\t')
-				if tokens[1] == 'AddName':
+				if tokens[1] == "AddName":
 					self.add_name(tokens[2], tokens[3], tokens[4])
-				elif tokens[1] == 'AllowName':
+				elif tokens[1] == "AllowName":
 					self.allow_name(tokens[2], tokens[3])
-				elif tokens[1] == 'BlockName':
+				elif tokens[1] == "BlockName":
 					self.block_name(tokens[2], tokens[3])
 		self.changelog_file = file
 		self.changelog_lock.release()
@@ -72,8 +72,8 @@ class Tagger:
 	def save_changelog(self, *args):
 		if self.changelog_file:
 			self.changelog_lock.acquire()
-			handle = open(self.changelog_file, 'a')
-			handle.write(datetime.datetime.now().strftime('%d%m%Y %H:%M:%S.%f\t'))
+			handle = open(self.changelog_file, "a")
+			handle.write(datetime.datetime.now().strftime("%d%m%Y %H:%M:%S.%f\t"))
 			handle.write('\t'.join(map(str, args)))
 			handle.write('\n')
 			handle.close()
@@ -132,7 +132,7 @@ class Tagger:
 	def add_name(self, name, entity_type, entity_identifier, document_id=None):
 		if not self.check_name(name, entity_type, entity_identifier):
 			self.cpp_tagger.add_name(name, int(entity_type), entity_identifier)
-			self.save_changelog('AddName', name, entity_type, entity_identifier)
+			self.save_changelog("AddName", name, entity_type, entity_identifier)
 		if document_id:
 			self.document_types_lock.acquire()
 			if document_id not in self.document_types:
@@ -144,7 +144,7 @@ class Tagger:
 	def allow_name(self, name, document_id):
 		if self.is_blocked(name, document_id):
 			self.cpp_tagger.allow_block_name(name, document_id, False)
-			self.save_changelog('AllowName', name, document_id)
+			self.save_changelog("AllowName", name, document_id)
 
 	def block_name(self, name, document_id):
 		if not self.is_blocked(name, document_id):
@@ -156,7 +156,7 @@ class Tagger:
 			if len(self.blocked_documents[name]) == 5:
 				self.cpp_tagger.allow_block_name(name, None, True)
 			self.blocked_documents_lock.release()
-			self.save_changelog('BlockName', name, document_id)
+			self.save_changelog("BlockName", name, document_id)
 
 	def check_name(self, name, entity_type, entity_identifier):
 		return self.cpp_tagger.check_name(name, int(entity_type), entity_identifier)
@@ -164,7 +164,7 @@ class Tagger:
 	def is_blocked(self, name, document_id):
 		return self.cpp_tagger.is_blocked(document_id, name)
 
-	def get_matches(self, document, document_id, entity_types, auto_detect=True, allow_overlap=False, protect_tags=True, max_tokens=5, tokenize_characters=False, ignore_blacklist=False):
+	def get_matches(self, document, document_id, entity_types, auto_detect=True, allow_overlap=False, protect_tags=True, max_tokens=5, tokenize_characters=False, ignore_blacklist=False, utf8_coordinates=False):
 		document_id = str(document_id)
 		entity_types = set(entity_types)
 		self.document_types_lock.acquire()
@@ -180,15 +180,33 @@ class Tagger:
 		params.max_tokens = max_tokens
 		params.tokenize_characters = tokenize_characters
 		params.ignore_blacklist = ignore_blacklist
-		return self.cpp_tagger.get_matches(document, document_id, params)
+		matches = self.cpp_tagger.get_matches(document, document_id, params)
+		if utf8_coordinates:
+			mapping = {}
+			byte = 0
+			char = 0
+			u_document = document.decode("utf8")
+			for b in u_document:
+				u = b.encode("utf8")
+				char_bytes = len(u)
+				for i in range(0, char_bytes):
+					mapping[byte+i] = char
+				byte += char_bytes
+				char += 1
+			u_matches = []
+			for match in matches:
+				u_matches.append((mapping[match[0]], mapping[match[1]], match[2]))
+			return u_matches
+		else:
+			return matches
 
 	def get_entities(self, document, document_id, entity_types, auto_detect=True, allow_overlap=False, protect_tags=True, max_tokens=5, tokenize_characters=False, ignore_blacklist=False, format='xml'):
 		if format is None:
-			format = 'xml'
+			format = "xml"
 		format = format.lower()
 		matches = self.get_matches(document, document_id, entity_types, auto_detect, allow_overlap, protect_tags, max_tokens, tokenize_characters, ignore_blacklist)
 		doc = []
-		if format == 'xml':
+		if format == "xml":
 			uniq = {}
 			for match in matches:
 				if match[2] is not None:
@@ -241,7 +259,7 @@ class Tagger:
 			doc = '\n'.join(doc)
 		return doc
 
-	def create_html(self, document, document_id, matches, basename='tagger', add_events=False, extra_classes=False, force_important=False, html_footer=''):
+	def create_html(self, document, document_id, matches, basename="tagger", add_events=False, extra_classes=False, force_important=False, html_footer=""):
 		matches.sort()
 		doc = []
 		i = 0
@@ -251,16 +269,16 @@ class Tagger:
 		for priority in self.types:
 			priority_type_rule[priority] = lambda x: eval(self.types[priority])
 		for match in matches:
-			length = match[0] - i
+			length = match[0]-i
 			if length > 0:
 				doc.append(document[i:match[0]])
 			if match[2] is not None:
 				text = document[match[0]:match[1]+1]
 				str = []
-				match_classes = [basename+'_match']
+				match_classes = [basename+"_match"]
 				match_types = set()
 				for entity_type, entity_identifier in match[2]:
-					str.append('%i.%s' % (entity_type, entity_identifier))
+					str.append("%i.%s" % (entity_type, entity_identifier))
 					all_types.add(entity_type)
 					match_types.add(entity_type)
 					if extra_classes:
@@ -277,9 +295,9 @@ class Tagger:
 					if match_style:
 						break
 				if force_important:
-					match_style = ' !important;'.join(match_style.split(';'))
+					match_style = " !important;".join(match_style.split(";"))
 				md5 = hashlib.md5()
-				str = ';'.join(str)
+				str = ";".join(str)
 				md5.update(str)
 				key = md5.hexdigest()
 				divs[key] = str
