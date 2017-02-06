@@ -132,11 +132,11 @@ char* InputFile::get_line()
 	int size = 4096;
 	char* buffer = (char*)malloc(size*sizeof(char));
 	while (true) {
-		char c = fgetc(this->file);
+		int c = fgetc(this->file);
 		if (c == EOF || c == '\n') {
 			break;
 		}
-		buffer[length] = c;
+		buffer[length] = (char)c;
 		++length;
 		if (length == size) {
 			size *= 2;
