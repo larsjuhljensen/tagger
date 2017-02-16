@@ -8,7 +8,7 @@ using namespace std;
 
 namespace std
 {
-	template<> size_t hash<const char*>::operator()(const char* val) const;
+	template<> size_t hash<const char*>::operator()(const char* val) const noexcept;
 }
 
 /* Simple string hash that does not allow for orthographic variation */
