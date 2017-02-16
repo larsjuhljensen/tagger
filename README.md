@@ -22,7 +22,7 @@ tagcorpus is known to compile under Suse Linux.  If you are compiling under MacO
 
 ### Compiling and installation ###
 
-To configure, edit the makefile and ensure that the CFLAGS variable includes a -I option that points to your Python.h wherever it is installed on your system.
+To configure, edit the makefile and ensure that the CFLAGS variable includes a -I (capital i) option that points to your Python.h wherever it is installed on your system.
 
 ~~~~
 make
