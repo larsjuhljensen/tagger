@@ -165,6 +165,10 @@ class Tagger:
 		return self.cpp_tagger.is_blocked(document_id, name)
 
 	def get_matches(self, document, document_id, entity_types, auto_detect=True, allow_overlap=False, protect_tags=True, max_tokens=5, tokenize_characters=False, ignore_blacklist=False, utf8_coordinates=False):
+		if not PY3:
+			if isinstance(document, unicode):
+				document = document.encode("utf8")
+				utf8_coordinates = True
 		document_id = str(document_id)
 		entity_types = set(entity_types)
 		self.document_types_lock.acquire()
