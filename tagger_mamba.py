@@ -8,6 +8,10 @@ import mamba.setup
 import mamba.task
 import mamba.util
 
+import blackmamba.database
+import blackmamba.html
+import blackmamba.xpage
+
 import tagger.tagger
 
 
