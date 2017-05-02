@@ -3,6 +3,7 @@
 #include "meta_handlers.h"
 #include "print_handlers.h"
 #include "score_handlers.h"
+#include "segment_handlers.h"
 #include "threaded_batch_tagger.h"
 
 #include <fstream>
@@ -51,6 +52,7 @@ int main (int argc, char *argv[])
 	int threads = 1;
 	char out_matches[MAXFILENAMELEN] = "";
 	char out_pairs[MAXFILENAMELEN] = "";
+	char out_segments[MAXFILENAMELEN] = "";
 	
 	int c; // parse command line arguments
 	while (1) {
@@ -72,6 +74,7 @@ int main (int argc, char *argv[])
 			{"threads", optional_argument, 0, 't'},
 			{"out-matches", optional_argument, 0, 'm'},
 			{"out-pairs", optional_argument, 0, 'a'},
+			{"out-segments", optional_argument, 0, 'b'},
 			{"help", no_argument, 0, 'h'},
 			{0, 0, 0, 0}
 		};
@@ -106,6 +109,7 @@ int main (int argc, char *argv[])
 				printf("\t--threads=%d\n", threads);
 				printf("\t--out-matches=filename\n");
 				printf("\t--out-pairs=filename\n");
+				printf("\t--out-segments=filename\n");
 				exit(0);
 				break;
 			
@@ -200,6 +204,12 @@ int main (int argc, char *argv[])
 				}
 				break;
 			
+			case 'b':
+				if (optarg) {
+					strncpy(out_segments, optarg, min(MAXFILENAMELEN, int(sizeof(out_segments))));
+				}
+				break;
+			
 			case '?':
 				/* getopt_long already printed an error message. */
 				break;
@@ -246,6 +256,10 @@ int main (int argc, char *argv[])
 		else {
 			batch_handler.push_back(new ScoreBatchHandler(out_pairs, batch_tagger.entity_type_map, document_weight, paragraph_weight, sentence_weight, normalization_factor));
 		}
+	}
+	
+	if (validate_opt(out_segments)) {
+		batch_handler.push_back(new SegmentBatchHandler(out_segments));
 	}
 	
 	GetMatchesParams params(types);

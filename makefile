@@ -37,7 +37,7 @@ libtagger.so: tagger.o
 libtagger.a: tagger.o
 	ar -rfs -o $@ $<
 
-tagcorpus: tagcorpus.cxx acronyms.h document.h file.h hash.h mutex.h thread.h match_handlers.h base_handlers.h meta_handlers.h print_handlers.h score_handlers.h batch_tagger.h threaded_batch_tagger.h tagger.h tagger_core.h tagger_types.h tightvector.h tokens.h
+tagcorpus: tagcorpus.cxx acronyms.h document.h file.h hash.h mutex.h thread.h match_handlers.h base_handlers.h meta_handlers.h print_handlers.h score_handlers.h segment_handlers.h batch_tagger.h threaded_batch_tagger.h tagger.h tagger_core.h tagger_types.h tightvector.h tokens.h
 	$(CC) $(CFLAGS) -lboost_regex -pthread -o $@ $< -lm
 
 cleandict: cleandict.cxx acronyms.h file.h hash.h tagger.h tagger_core.h tagger_types.h
