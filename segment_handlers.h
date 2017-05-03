@@ -38,11 +38,13 @@ void SegmentBatchHandler::on_document_begin(Document& document)
 	Segments segments = document.get_segments();
 	this->lock();
 	int paragraph = 0;
+	int sentence = 0;
 	for (Segments::iterator it = segments.begin(); it != segments.end(); it++) {
 		if (it->paragraph_begin) {
 			paragraph++;
 		}
-		fprintf(this->file, "%d\t%d\t%d\t%d\n", document.key, paragraph, it->begin-document.text, it->end-document.text);
+		sentence++;
+		fprintf(this->file, "%d\t%d\t%d\t%ld\t%ld\n", document.key, paragraph, sentence, it->begin-document.text, it->end-document.text);
 	}
 	this->unlock();
 }

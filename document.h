@@ -43,6 +43,9 @@ class Document
 
 class TsvDocument : public Document
 {
+	protected:
+		Segments segments;
+		
 	public:
 		char* line;
 		
@@ -174,117 +177,118 @@ Segments TsvDocument::get_segments()
 	};
 	
 	char* marker = text;
-	Segments segments;
 	
-	while (*marker) {
-		while (sentence_type[(unsigned char)*marker] == 3) {
-			++marker;
-		}
-		
-		Segment segment;
-		segment.begin = marker;
-		if (marker == text || *(marker-1) == '\t') {
-			segment.paragraph_begin = true;
-		}
-		else {
-			segment.paragraph_begin = false;
-		}
-	
-		char* p1; // First punctuation.
-		while (true) {
-			while (*marker && *marker != '\t' && sentence_type[(unsigned char)*marker] != 1) {
-				++marker;
-			}
-			if (!*marker || *marker == '\t') {
-				segment.end = marker;
-				segment.paragraph_end = true;
-				segments.push_back(segment);
-				break;
-			}
-			p1 = marker;
-			do {
-				++marker;
-			} while (sentence_type[(unsigned char)*marker] == 1);
-			if (!*marker || *marker == '\t') {
-				segment.end = marker;
-				segment.paragraph_end = true;
-				segments.push_back(segment);
-				break;
-			}
-			while (sentence_type[(unsigned char)*marker] == 2 && *marker != '(') {
-				++marker;
-			}		
-			if (!*marker || *marker == '\t') {
-				segment.end = marker;
-				segment.paragraph_end = true;
-				segments.push_back(segment);
-				break;
-			}
-			if (sentence_type[(unsigned char)*marker] != 3) {
-				continue;
-			}
-			segment.end = marker;
-			do {
-				++marker;
-			} while (sentence_type[(unsigned char)*marker] == 3);
-			if (!*marker || *marker == '\t') {
-				segment.end = marker;
-				segment.paragraph_end = true;
-				segments.push_back(segment);
-				break;
-			}
-			while (sentence_type[(unsigned char)*marker] == 2 && *marker != ')') {
-				++marker;
-			}
-			if (!*marker || *marker == '\t') {
-				segment.end = marker;
-				segment.paragraph_end = true;
-				segments.push_back(segment);
-				break;
-			}
+	if (this->segments.empty()) {
+		while (*marker) {
 			while (sentence_type[(unsigned char)*marker] == 3) {
 				++marker;
 			}
-			if (!*marker || *marker == '\t') {
-				segment.end = marker;
-				segment.paragraph_end = true;
-				segments.push_back(segment);
-				break;
+			
+			Segment segment;
+			segment.begin = marker;
+			if (marker == text || *(marker-1) == '\t') {
+				segment.paragraph_begin = true;
 			}
-			if (*marker == '-') {
-				++marker;
+			else {
+				segment.paragraph_begin = false;
 			}
-			if (!*marker || *marker == '\t') {
-				segment.end = marker;
-				segment.paragraph_end = true;
-				segments.push_back(segment);
-				break;
-			}
-			if (sentence_type[(unsigned char)*marker] == 4 && p1-segment.begin >= 4) {
-				if (*p1 == '.') {
-					if (*(p1-4) == ' ' && *(p1-2) == '.') {
-						if (*(p1-1) == 'e') {
-							if (*(p1-3) == 'i' || *(p1-3) == 'I') {
-								continue;
-							}
-						}
-						else if (*(p1-1) == 'g') {
-							if (*(p1-3) == 'e' || *(p1-3) == 'E') {
-								continue;
-							}
-						}
-					}
-					else if (p1-segment.begin >= 6 && *(p1-6) == ' ' && *(p1-5) == 'e' && *(p1-4) == 't' && *(p1-3) == ' ' && *(p1-2) == 'a' && *(p1-1) == 'l') {
-						continue;
-					}
+			
+			char* p1; // First punctuation.
+			while (true) {
+				while (*marker && *marker != '\t' && sentence_type[(unsigned char)*marker] != 1) {
+					++marker;
 				}
-				segment.paragraph_end = false;
-				segments.push_back(segment);
-				break;
+				if (!*marker || *marker == '\t') {
+					segment.end = marker;
+					segment.paragraph_end = true;
+					this->segments.push_back(segment);
+					break;
+				}
+				p1 = marker;
+				do {
+					++marker;
+				} while (sentence_type[(unsigned char)*marker] == 1);
+				if (!*marker || *marker == '\t') {
+					segment.end = marker;
+					segment.paragraph_end = true;
+					this->segments.push_back(segment);
+					break;
+				}
+				while (sentence_type[(unsigned char)*marker] == 2 && *marker != '(') {
+					++marker;
+				}
+				if (!*marker || *marker == '\t') {
+					segment.end = marker;
+					segment.paragraph_end = true;
+					this->segments.push_back(segment);
+					break;
+				}
+				if (sentence_type[(unsigned char)*marker] != 3) {
+					continue;
+				}
+				segment.end = marker;
+				do {
+					++marker;
+				} while (sentence_type[(unsigned char)*marker] == 3);
+				if (!*marker || *marker == '\t') {
+					segment.end = marker;
+					segment.paragraph_end = true;
+					this->segments.push_back(segment);
+					break;
+				}
+				while (sentence_type[(unsigned char)*marker] == 2 && *marker != ')') {
+					++marker;
+				}
+				if (!*marker || *marker == '\t') {
+					segment.end = marker;
+					segment.paragraph_end = true;
+					this->segments.push_back(segment);
+					break;
+				}
+				while (sentence_type[(unsigned char)*marker] == 3) {
+					++marker;
+				}
+				if (!*marker || *marker == '\t') {
+					segment.end = marker;
+					segment.paragraph_end = true;
+					this->segments.push_back(segment);
+					break;
+				}
+				if (*marker == '-') {
+					++marker;
+				}
+				if (!*marker || *marker == '\t') {
+					segment.end = marker;
+					segment.paragraph_end = true;
+					this->segments.push_back(segment);
+					break;
+				}
+				if (sentence_type[(unsigned char)*marker] == 4 && p1-segment.begin >= 4) {
+					if (*p1 == '.') {
+						if (*(p1-4) == ' ' && *(p1-2) == '.') {
+							if (*(p1-1) == 'e') {
+								if (*(p1-3) == 'i' || *(p1-3) == 'I') {
+									continue;
+								}
+							}
+							else if (*(p1-1) == 'g') {
+								if (*(p1-3) == 'e' || *(p1-3) == 'E') {
+									continue;
+								}
+							}
+						}
+						else if (p1-segment.begin >= 6 && *(p1-6) == ' ' && *(p1-5) == 'e' && *(p1-4) == 't' && *(p1-3) == ' ' && *(p1-2) == 'a' && *(p1-1) == 'l') {
+							continue;
+						}
+					}
+					segment.paragraph_end = false;
+					this->segments.push_back(segment);
+					break;
+				}
 			}
 		}
 	}
-	return(segments);	
+	return(this->segments);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
