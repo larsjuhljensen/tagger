@@ -42,6 +42,7 @@ void SegmentBatchHandler::on_document_begin(Document& document)
 	for (Segments::iterator it = segments.begin(); it != segments.end(); it++) {
 		if (it->paragraph_begin) {
 			paragraph++;
+			sentence = 0;
 		}
 		sentence++;
 		fprintf(this->file, "%d\t%d\t%d\t%ld\t%ld\n", document.key, paragraph, sentence, it->begin-document.text, it->end-document.text);
