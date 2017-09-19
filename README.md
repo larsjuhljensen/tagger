@@ -46,6 +46,14 @@ The documents to be searched are by default provided on stdin, unless a file is 
 
 If you are using the CPR server infrastructure, the Medline documents are available under /home/purple1/databases/Medline
 
+The format of the input files are tab separated columns that contain the following data:
+1. identifier
+2. authors
+3. journal
+4. year
+5. title
+6. text
+
 #### Types ####
 
 Specified with the --types command line option.  Types is a tab delimited file that contains the integer representing the types of entities you are interested in tagging.  
