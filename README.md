@@ -47,6 +47,7 @@ The documents to be searched are by default provided on stdin, unless a file is 
 If you are using the CPR server infrastructure, the Medline documents are available under /home/purple1/databases/Medline
 
 The format of the input files are tab separated columns that contain the following data:
+
 * identifier
 * authors
 * journal
