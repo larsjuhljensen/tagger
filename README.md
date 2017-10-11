@@ -32,6 +32,11 @@ and then ensure tagcorpus is in your path.
 
 Alternatively, you can download a Docker image with the tagger already compiled.
 
+### Predefined dictionaries ###
+
+Dictionaries for proteins, species, GO terms, tissues, [diseases|http://download.jensenlab.org/diseases_dictionary.tar.gz], environments, chemicals and phenotypes are available for use.
+
+
 ### Input Files and Options ###
 
 You will need several input files to run tagcorpus.  Documents, entities, names and types are required, and the others are optional.
