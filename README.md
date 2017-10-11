@@ -20,6 +20,10 @@ tagcorpus is known to compile under Suse Linux.  If you are compiling under MacO
 * swig
 * boost
 
+### Docker ###
+
+This software is also available as a Docker from http://hub.docker.com/r/larsjuhljensen/tagger/.
+
 ### Compiling and installation ###
 
 To configure, edit the makefile and ensure that the CFLAGS variable includes a -I (capital i) option that points to your Python.h wherever it is installed on your system.
@@ -34,7 +38,7 @@ Alternatively, you can download a Docker image with the tagger already compiled.
 
 ### Predefined dictionaries ###
 
-Dictionaries for proteins, species, GO terms, tissues, [diseases|http://download.jensenlab.org/diseases_dictionary.tar.gz], environments, chemicals and phenotypes are available for use.
+Dictionaries for [human proteins](http://download.jensenlab.org/human_dictionary.tar.gz), [tissues](http://download.jensenlab.org/tissues_dictionary.tar.gz), [organisms](http://download.jensenlab.org/organisms_dictionary.tar.gz), [environments](http://download.jensenlab.org/environments_dictionary.tar.gz), [diseases](http://download.jensenlab.org/diseases_dictionary.tar.gz), [compartments](http://download.jensenlab.org/compartments_dictionary.tar.gz), [phenotypes](http://download.jensenlab.org/phenotypes_dictionary.tar.gz) and [everything](http://download.jensenlab.org/tagger_dictionary.tar.gz) are available for use.
 
 
 ### Input Files and Options ###
