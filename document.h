@@ -230,8 +230,7 @@ Segments TsvDocument::get_segments()
 				do {
 					++marker;
 				} while (sentence_type[(unsigned char)*marker] == 3);
-				if (!*marker || *marker == '\t') {
-					segment.end = marker;
+				if (!*marker || *(marker-1) == '\t') {
 					segment.paragraph_end = true;
 					this->segments.push_back(segment);
 					break;
@@ -240,7 +239,6 @@ Segments TsvDocument::get_segments()
 					++marker;
 				}
 				if (!*marker || *marker == '\t') {
-					segment.end = marker;
 					segment.paragraph_end = true;
 					this->segments.push_back(segment);
 					break;
@@ -264,6 +262,7 @@ Segments TsvDocument::get_segments()
 					break;
 				}
 				if (sentence_type[(unsigned char)*marker] == 4 && p1-segment.begin >= 4) {
+					// Check for common abbreviations.
 					if (*p1 == '.') {
 						if (*(p1-4) == ' ' && *(p1-2) == '.') {
 							if (*(p1-1) == 'e') {
