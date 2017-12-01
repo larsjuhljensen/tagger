@@ -36,7 +36,7 @@ def entity_dict(qtype, qid):
 
 class Tagger:
 
-	def __init__(self, java_script=None):
+	def __init__(self, java_script=None, re_stop=None):
 		self.re_head_begin = re.compile("<head[^>]*>", re.I)
 		self.re_head_end   = re.compile("</head>", re.I)
 		self.re_base_href  = re.compile("<base href=.+?>", re.I)
@@ -52,7 +52,10 @@ class Tagger:
 		self.changelog_lock = threading.Lock()
 		self.document_types = {}
 		self.document_types_lock = threading.Lock()
-		self.cpp_tagger     = tagger_swig.Tagger(False) # False: Using string dict., not serial dict.
+		if re_stop is None:
+			self.cpp_tagger = tagger_swig.Tagger(False)
+		else:
+			self.cpp_tagger = tagger_swig.Tagger(False, re_stop)
 
 	def load_changelog(self, file):
 		self.changelog_lock.acquire()
