@@ -180,19 +180,17 @@ Segments TsvDocument::get_segments()
 	
 	if (this->segments.empty()) {
 		while (*marker) {
-			while (sentence_type[(unsigned char)*marker] == 3) {
-				++marker;
-			}
-			
 			Segment segment;
-			segment.begin = marker;
-			if (marker == text || *(marker-1) == '\t') {
+			if (marker == text || *marker == '\t') {
 				segment.paragraph_begin = true;
 			}
 			else {
 				segment.paragraph_begin = false;
 			}
-			
+			while (sentence_type[(unsigned char)*marker] == 3) {
+				++marker;
+			}	
+			segment.begin = marker;
 			char* p1; // First punctuation.
 			while (true) {
 				while (*marker && *marker != '\t' && sentence_type[(unsigned char)*marker] != 1) {
@@ -229,12 +227,7 @@ Segments TsvDocument::get_segments()
 				segment.end = marker;
 				do {
 					++marker;
-				} while (sentence_type[(unsigned char)*marker] == 3);
-				if (!*marker || *(marker-1) == '\t') {
-					segment.paragraph_end = true;
-					this->segments.push_back(segment);
-					break;
-				}
+				} while (sentence_type[(unsigned char)*marker] == 3 && *marker != '\t');
 				while (sentence_type[(unsigned char)*marker] == 2 && *marker != ')') {
 					++marker;
 				}
@@ -243,7 +236,7 @@ Segments TsvDocument::get_segments()
 					this->segments.push_back(segment);
 					break;
 				}
-				while (sentence_type[(unsigned char)*marker] == 3) {
+				while (sentence_type[(unsigned char)*marker] == 3 && *marker != '\t') {
 					++marker;
 				}
 				if (!*marker || *marker == '\t') {
