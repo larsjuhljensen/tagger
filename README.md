@@ -239,13 +239,23 @@ If --type-pairs and --output-pairs are specified, then output will be written to
 3. final score
 4. all remaining columns are unused
 
+#### Sentence segmentation ####
+
+If --out-segments is specified, the sentence segmentation will be written to the given file. The output contains the following tab separated columns:
+
+1. pubmedid
+2. paragraph number
+3. sentence number
+4. sentence segment start character
+5. sentence segment end character
+
 ## Examples of use ##
 
 Example: specify stopwords and pairs, and output pairs output to a file called output-pairs.
 ~~~~
 gzip -cd `ls -1r /home/purple1/databases/Medline/*.tsv.gz` | tagcorpus --entities=entities \\
 --names=names --stopwords=all_global.tsv --type-pairs=typepairs --threads=16 \\
---out-pairs=output-pairs --types=types > output-mentions
+--out-pairs=output-pairs --types=types --out-segments=all_segments.tsv > output-mentions
 ~~~~
 
 ## TODO ##
