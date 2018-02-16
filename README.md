@@ -187,9 +187,11 @@ The tagger is case sensitive, so the stopword 'ran' will match exactly this stri
 The format of the stopwords file is two tab separated columns:
 
 * the word, which may be a string containing spaces
-* either the string "t" or the string "f", according to whether it is a stopword or not
+* either the string "t" or the string "f", according to whether it is a stopword ("t") or is whitelisted ("f")
 
 Only stopwords with t in the second column are used as stopwords.  This format makes it relatively easy to convert the output of the tagger run without stopwords into a stopword list that can be manually curated.  
+
+Whitelisting: the tagger will ignore words of less than 3 characters by default.  To explicitly whitelist such words, place them on the stoplist with "f" in the second column.
 
 #### Groups ####
 
