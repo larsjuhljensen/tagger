@@ -15,6 +15,7 @@ extern "C"
 }
 
 #define MAXFILENAMELEN 256
+#define VERSION "1.1"
 
 using namespace std;
 
@@ -75,6 +76,7 @@ int main (int argc, char *argv[])
 			{"out-matches", optional_argument, 0, 'm'},
 			{"out-pairs", optional_argument, 0, 'a'},
 			{"out-segments", optional_argument, 0, 'b'},
+			{"version", no_argument, 0, 'v'},
 			{"help", no_argument, 0, 'h'},
 			{0, 0, 0, 0}
 		};
@@ -111,7 +113,10 @@ int main (int argc, char *argv[])
 				printf("\t--out-pairs=filename\n");
 				printf("\t--out-segments=filename\n");
 				exit(0);
-				break;
+			
+			case 'v':
+				printf("JensenLab Tagger version %s\n", VERSION);
+				exit(0);
 			
 			case 'y':
 				if (optarg) {
