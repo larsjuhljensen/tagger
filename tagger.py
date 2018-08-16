@@ -36,7 +36,7 @@ def entity_dict(qtype, qid):
 
 class Tagger:
 
-	def __init__(self, java_script=None, re_stop=None):
+	def __init__(self, java_script=None, re_stop=None, serials_only=False):
 		self.re_head_begin = re.compile("<head[^>]*>", re.I)
 		self.re_head_end   = re.compile("</head>", re.I)
 		self.re_base_href  = re.compile("<base href=.+?>", re.I)
@@ -53,9 +53,9 @@ class Tagger:
 		self.document_types = {}
 		self.document_types_lock = threading.Lock()
 		if re_stop is None:
-			self.cpp_tagger = tagger_swig.Tagger(False)
+			self.cpp_tagger = tagger_swig.Tagger(serials_only)
 		else:
-			self.cpp_tagger = tagger_swig.Tagger(False, re_stop)
+			self.cpp_tagger = tagger_swig.Tagger(serials_only, re_stop)
 
 	def load_changelog(self, file):
 		self.changelog_lock.acquire()
