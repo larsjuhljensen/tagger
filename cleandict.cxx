@@ -46,7 +46,6 @@ class CleaningTagger : public Tagger {
 		{
 			unordered_set<int> filter_types;
 			filter_types.insert(-2);
-			filter_types.insert(-21);
 			filter_types.insert(-22);
 			filter_types.insert(-25);
 			filter_types.insert(-26);
