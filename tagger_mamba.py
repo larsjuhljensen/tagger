@@ -8,9 +8,12 @@ import mamba.setup
 import mamba.task
 import mamba.util
 
-import blackmamba.database
-import blackmamba.html
-import blackmamba.xpage
+try:
+	import blackmamba.database
+	import blackmamba.html
+	import blackmamba.xpage
+except ImportError:
+	blackmamba = None
 
 import tagger.tagger
 
