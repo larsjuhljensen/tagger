@@ -78,7 +78,9 @@ void DocumentTagger::load_groups(int type, const char* groups_filename)
 
 void DocumentTagger::process(Document& document, const GetMatchesParams& params, IDocumentHandler* document_handler)
 {
-	Matches matches = Tagger::get_matches(document.text, NULL, params);
+	char document_id[16];
+	sprintf(document_id, "%d", document.key);
+	Matches matches = Tagger::get_matches(document.text, document_id, params);
 	this->match_handler->process(matches);
 	document_handler->process(document, matches);
 	for (Matches::iterator it = matches.begin(); it != matches.end(); it++) {

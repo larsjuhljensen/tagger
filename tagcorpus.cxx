@@ -44,6 +44,7 @@ int main (int argc, char *argv[])
 	char groups[MAXFILENAMELEN] = "";
 	char type_pairs[MAXFILENAMELEN] = "";
 	char stopwords[MAXFILENAMELEN] = "";
+	char localstopwords[MAXFILENAMELEN] = "";
 	bool autodetect = false;
 	bool tokenize_characters = false;
 	float document_weight = 1;
@@ -66,6 +67,7 @@ int main (int argc, char *argv[])
 			{"groups", optional_argument, 0, 'g'},
 			{"type-pairs", optional_argument, 0, 'p'},
 			{"stopwords", optional_argument, 0, 's'},
+			{"local-stopwords", optional_argument, 0, 'l'},
 			{"autodetect", no_argument, 0, 'u'},
 			{"tokenize-characters", no_argument, 0, 'z'},
 			{"document-weight", optional_argument, 0, 'd'},
@@ -83,7 +85,7 @@ int main (int argc, char *argv[])
 		
 		int option_index = 0;
 		
-		c = getopt_long (argc, argv, "y:e:n:i:g:p:s:u:d:r:c:f:t:m:a:h:", long_options, &option_index);
+		c = getopt_long (argc, argv, "y:e:n:i:g:p:s:l:u:d:r:c:f:t:m:a:h:", long_options, &option_index);
 		
 		/* Detect the end of the options. */
 		if (c == -1)
@@ -102,6 +104,7 @@ int main (int argc, char *argv[])
 				printf("\t--groups=filename\n");
 				printf("\t--type-pairs=filename\tTypes of pairs that are allowed\n");
 				printf("\t--stopwords=filename\n");
+				printf("\t--local-stopwords=filename\n");
 				printf("\t--autodetect Turn autodetect on\n");
 				printf("\t--tokenize-characters Turn single-character tokenization on\n");
 				printf("\t--document-weight=%1.2f\n", document_weight);
@@ -127,6 +130,12 @@ int main (int argc, char *argv[])
 			case 'e':
 				if (optarg) {
 					strncpy(entities, optarg, min(MAXFILENAMELEN, int(sizeof(entities))));
+				}
+				break;
+			
+			case 'l':
+				if (optarg) {
+					strncpy(localstopwords, optarg, min(MAXFILENAMELEN, int(sizeof(localstopwords))));
 				}
 				break;
 			
@@ -236,6 +245,9 @@ int main (int argc, char *argv[])
 	}
 	if (validate_opt(stopwords)) {
 		batch_tagger.load_global(stopwords);
+	}
+	if (validate_opt(localstopwords)) {
+		batch_tagger.load_local(localstopwords);
 	}
 	cerr << " done." << endl;
 	
