@@ -20,10 +20,6 @@ tagcorpus is known to compile under Suse Linux.  If you are compiling under MacO
 * swig
 * boost
 
-### Docker ###
-
-This software is also available as a Docker from http://hub.docker.com/r/larsjuhljensen/tagger/.
-
 ### Compiling and installation ###
 
 To configure, edit the makefile and ensure that the CFLAGS variable includes a -I (capital i) option that points to your Python.h wherever it is installed on your system.
