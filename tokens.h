@@ -2,12 +2,12 @@
 #define __REFLECT_TOKENS_HEADER__
 
 class Token {
-	
+
 	public:
 		int start;
 		int stop;
 		int length;
-		
+
 	public:
 		Token();
 		Token(const Token& other);
@@ -48,7 +48,7 @@ Token::Token(int start, int stop) {
 const unsigned char tokenize_type[256] = {
 	  0,   1,   1,   1,   1,   1,   1,   1,   1,   2,   2,   1,   1,   2,   1,   1,
 	  1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,
-	  2,   2,   1,   1,   1,   1,   1,   1,   2,   2,   1,   2,   2,   3,   2,   2,
+	  2,   2,   1,   1,   1,   1,   1,   2,   2,   2,   1,   2,   2,   3,   2,   2,
 	  1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   2,   2,   1,   1,   1,   2,
 	  1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,
 	  1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   2,   1,   2,   1,   2,
@@ -74,7 +74,6 @@ void Tokens::add(char* document, int offset, const GetMatchesParams& params)
 	}
 	else {
 		int start = -1;
-		int hyphen = -1;
 		int i = offset;
 		while (true) {
 			unsigned char type = tokenize_type[(unsigned char)document[i]];
@@ -82,26 +81,21 @@ void Tokens::add(char* document, int offset, const GetMatchesParams& params)
 				if (start == -1) {
 					start = i;
 				}
-				else if (hyphen != -1) {
-					Token cur(start, hyphen-1);
-					tokens.push_back(cur);
-					start = i;
-					hyphen = -1;
-				}
-			}
-			else if (type == 3) {
-				if (start != -1 && hyphen == -1) {
-					hyphen = i;
-				}
 			}
 			else {
 				if (start != -1) {
 					Token cur(start, i-1);
 					tokens.push_back(cur);
 					start = -1;
-					hyphen = -1;
 				}
-				if (type == 0) {
+				if (type == 3) {
+					start = i;
+					while (tokenize_type[(unsigned char)document[i+1]] == 3) ++i;
+					Token cur(start, i);
+					tokens.push_back(cur);
+					start = -1;
+				}
+				else if (type == 0) {
 					break;
 				}
 			}
