@@ -61,8 +61,8 @@ Tagger::Tagger(bool serials_only, const char* pattern)
 	}
 	else {
 		this->re_stop = regex(
-			"\\A&|\\A(.{0,2}|.[ \t\r\n-]+.|[^A-Za-z]*([ \t\r\n]|\\Z)|[ACDEFGHIKLMNPQRSTVWY]-?[0-9]{1,4}|[Oo][Rr][ -]*[0-9]+|[CJnsXx][ -]*[0-9.-]+|[0-9]{1,4}[A-Za-z]|[0-9.-]+[ -]*[ckmnp]?[AdghLlMmSsVXx][0-9-]*)\\Z"
-			"|\\A([DGNSTdgnst]o|[Aa][nst]?|[Aa]nd|[Aa]re|[Bb][ey]|[Bb]ut|[Cc]an|[Dd]id|[Ff]or|[Hh]a[ds]|[Hh]ave]|[Ii][fnst]|[Ii]ts|[Oo][fnr]|[Tt]he|[Tt]his|[Ww]as|[Ww]ere)[ \t\r\n]"
+			"\\A&|\\A(.{0,2}|.[ \t\r\n-]+.|[^A-Za-z]*([ \t\r\n]|\\Z)|[ACDEFGHIKLMNPQRSTVWY]-?[0-9]{1,4}|[Oo][Rr][ -]*[0-9]+|[CJnsXx][ -]*[0-9.-]+|[0-9]{1,4}[A-Za-z]|[0-9.-]+[ -]*[cGkMmnp]?[ABbdghLlMmSsVXx]\\(?[0-9-]*\\)?|[0-9] .{2,9})\\Z"
+			"|\\A([DGNSTdgnst]o|[Aa][nst]?|[Aa]nd|[Aa]re|[Bb][ey]|[Bb]ut|[Cc]an|[Dd]id|[Ff]or|[Hh]a[ds]|[Hh]ave|[Ii][fnst]|[Ii]ts|[Oo][fnr]|s|[Tt]he|[Tt]his|[Ww]as|[Ww]ere)[ \t\r\n]"
 			"|[ \t\r\n]([dgs]o|are|but|can|did|et|ha[ds]|have|i[fst]|its|this|was|were)[ \t\r\n]"
 			"|[ \t\r\n]([dgnst]o|a[nst]?|and|are|b[ey]|but|can|did|et|for|ha[ds]|have|i[fnst]|its|o[fnr]|the|this|was|were)\\Z"
 		);
