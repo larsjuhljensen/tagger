@@ -12,6 +12,8 @@
 #include <unordered_set>
 #include <unordered_map>
 
+typedef double SCORE;
+
 using namespace std;
 
 struct Segment
@@ -30,6 +32,7 @@ class Document
 		int key;
 		char* name;
 		char* text;
+		SCORE corpus_weight;
 		
 	public:
 		Document();
@@ -106,6 +109,7 @@ Document::Document()
 	this->key = 0;
 	this->name = NULL;
 	this->text = NULL;
+	this->corpus_weight=3.7;
 }
 
 Document::Document(const Document& other)
