@@ -8,13 +8,6 @@ species
 tagcorpus
 *.o
 
-# swig
-tagger_swig.py
-tagger_swig_wrap.cxx
-
-# lib
-libtagger.a
-
 # output
 out
 
