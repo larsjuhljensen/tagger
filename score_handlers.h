@@ -176,9 +176,9 @@ void ScoreDocumentHandler::on_document_begin(Document& document)
 void ScoreDocumentHandler::on_document_end(Document& document)
 {
 	ScoreBatchHandler* score_batch_handler = (ScoreBatchHandler*) this->batch_handler;
-	this->commit_pairs(this->document_pair_set, score_batch_handler->document_weight);
-	this->commit_pairs(this->paragraph_pair_set, score_batch_handler->paragraph_weight);
-	this->commit_pairs(this->sentence_pair_set, score_batch_handler->sentence_weight);
+	this->commit_pairs(this->document_pair_set, score_batch_handler->document_weight*(document.corpus_weight));
+	this->commit_pairs(this->paragraph_pair_set, score_batch_handler->paragraph_weight*(document.corpus_weight));
+	this->commit_pairs(this->sentence_pair_set, score_batch_handler->sentence_weight*(document.corpus_weight));
 	if (this->pair_score_map.size() >= 10000) {
 		score_batch_handler->lock();
 		score_batch_handler->pair_score_map += this->pair_score_map;
