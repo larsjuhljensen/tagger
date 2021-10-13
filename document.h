@@ -109,7 +109,7 @@ Document::Document()
 	this->key = 0;
 	this->name = NULL;
 	this->text = NULL;
-	this->corpus_weight=3.7;
+	this->corpus_weight=1.0;
 }
 
 Document::Document(const Document& other)
