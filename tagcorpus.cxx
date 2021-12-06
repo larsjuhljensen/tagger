@@ -15,7 +15,7 @@ extern "C"
 }
 
 #define MAXFILENAMELEN 256
-#define VERSION "1.1"
+#define VERSION "1.2"
 
 using namespace std;
 
@@ -47,6 +47,7 @@ int main (int argc, char *argv[])
 	char localstopwords[MAXFILENAMELEN] = "";
 	bool autodetect = false;
 	bool tokenize_characters = false;
+	char corpus_weights[MAXFILENAMELEN] = "";
 	float document_weight = 1;
 	float paragraph_weight = 2;
 	float sentence_weight = 0.2;
@@ -70,6 +71,7 @@ int main (int argc, char *argv[])
 			{"local-stopwords", optional_argument, 0, 'l'},
 			{"autodetect", no_argument, 0, 'u'},
 			{"tokenize-characters", no_argument, 0, 'z'},
+			{"corpus-weights", optional_argument, 0, 'w'},
 			{"document-weight", optional_argument, 0, 'd'},
 			{"paragraph-weight", optional_argument, 0, 'r'},
 			{"sentence-weight", optional_argument, 0, 'c'},
@@ -85,7 +87,7 @@ int main (int argc, char *argv[])
 		
 		int option_index = 0;
 		
-		c = getopt_long (argc, argv, "y:e:n:i:g:p:s:l:u:d:r:c:f:t:m:a:h:", long_options, &option_index);
+		c = getopt_long (argc, argv, "y:e:n:i:g:p:s:l:u:w:d:r:c:f:t:m:a:h:", long_options, &option_index);
 		
 		/* Detect the end of the options. */
 		if (c == -1)
@@ -107,6 +109,7 @@ int main (int argc, char *argv[])
 				printf("\t--local-stopwords=filename\n");
 				printf("\t--autodetect Turn autodetect on\n");
 				printf("\t--tokenize-characters Turn single-character tokenization on\n");
+				printf("\t--corpus-weights=filename\tIf not specify then all weights default 1.0\n");
 				printf("\t--document-weight=%1.2f\n", document_weight);
 				printf("\t--paragraph-weight=%1.2f\n", paragraph_weight);
 				printf("\t--sentence-weight=%1.2f\n", sentence_weight);
@@ -175,7 +178,13 @@ int main (int argc, char *argv[])
 			
 			case 'z':
 				tokenize_characters = true;
-			
+
+			case 'w':
+				if (optarg) {
+					strncpy(corpus_weights, optarg, min(MAXFILENAMELEN, int(sizeof(corpus_weights))));
+				}
+				break;
+
 			case 'd':
 				if (optarg) {
 					document_weight = atof(optarg);
@@ -259,6 +268,10 @@ int main (int argc, char *argv[])
 		document_reader = new TsvDocumentReader(stdin);
 	}
 	
+	if (validate_opt(corpus_weights)) {
+		document_reader->load_weights(corpus_weights);
+	}
+
 	if (validate_opt(out_matches)) {
 		batch_handler.push_back(new PrintBatchHandler(out_matches));
 	}
