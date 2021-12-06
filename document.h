@@ -374,7 +374,7 @@ void TsvDocumentReader::load_weights(InputFile file) {
 		vector<char*> fields = file.get_fields();
 		int size = fields.size();
 		if (size == 0) break;
-		if (size >= 2) {
+		if (size >= 2 && *fields[1] != '\0' && *fields[1] != '\t') {
 			weights[atoi(fields[0])] = atof(fields[1]);
 		}
 		for (vector<char*>::iterator it = fields.begin(); it != fields.end(); it++) delete *it;

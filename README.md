@@ -155,11 +155,17 @@ NB: additionally, an output file for the scored pairs output must also be specif
 
 By default, pairs are given a score of 1 if they occur in the same document, a score of 2 if they occur in the same paragraph, and a score of 0.2 if they occur in the same sentence.  The parameter a in the following formula controls the weight of the normalization factor (actually, 1-a is the exponent on the normalization factor, but let's not be too pedantic).
 
+c_ij (co-occurrence) = (sum(delta_s(i,j) * w_s + delta_p(i,j) * w_p + delta_d(i,j) * w_d)) * w_c
+
+Where s=sentence, p=paragraph, d=document and c=corpus. w_x stands for x-weight. delta_s(i,j) evaluates to 1 if term i and j occur in the same sentence and 0 otherwise and similarly for paragraphs and documents.
+
+Noted that corpus weights (w_c) are input from a optional input file, this file should contain 2 columns, the first column is PubMed ID and the second column is its corpus weight (if a document/PubMed ID is not assigned a weight, then the default weight is 1.0).
+
 score = c_ij^a * ( c_ij * c_.. / c_i. * c_.j )^(1-a)  
 
 Where . is shorthand for "count over all entities of the given type".  
 
-These values can be set with the --document-weight, --paragraph-weight, --sentence-weight and --normalization-factor command line options respectively.
+These values can be set with the --corpus-weights, --document-weight, --paragraph-weight, --sentence-weight and --normalization-factor command line options respectively.
 
 
 #### Deprecated: Organism ####
@@ -252,8 +258,8 @@ If --out-segments is specified, the sentence segmentation will be written to the
 Example: specify stopwords and pairs, and output pairs output to a file called output-pairs.
 ~~~~
 gzip -cd `ls -1r /home/purple1/databases/Medline/*.tsv.gz` | tagcorpus --entities=entities \\
---names=names --stopwords=all_global.tsv --type-pairs=typepairs --threads=16 \\
---out-pairs=output-pairs --types=types --out-segments=all_segments.tsv > output-mentions
+--names=names --stopwords=all_global.tsv --corpus-weights=all_weights.tsv --type-pairs=typepairs \\
+--threads=16 --out-pairs=output-pairs --types=types --out-segments=all_segments.tsv > output-mentions
 ~~~~
 
 ## TODO ##
