@@ -37,7 +37,7 @@ class Document
 	public:
 		Document();
 		Document(const Document& other);
-		Document(int key, const char* text);
+		Document(int key, const char* text, SCORE weight);
 		virtual ~Document();
 		
 	public:
@@ -117,14 +117,16 @@ Document::Document()
 Document::Document(const Document& other)
 {
 	this->key  = other.key;
+	this->weight = other.weight;
 	int length = strlen(other.text);
 	this->text = new char[length+1];
 	memcpy(this->text, other.text, length+1);
 }
 
-Document::Document(int key, const char* text)
+Document::Document(int key, const char* text, SCORE weight = 1.0)
 {
 	this->key = key;
+	this->weight = weight;
 	int length = strlen(text);
 	this->text = new char[length+1];
 	memcpy(this->text, text, length+1);

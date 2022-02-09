@@ -1,7 +1,17 @@
 #!/bin/bash
 
-try_num=$1
-use_Wc=$2
+# the first para is the name of output
+printf "Define the outputs name: [prefix name]\n"
+printf "default: (without name) >>> "
+read -r try_num
+#try_num=$1
+
+# the second para is whether to use Wc or not (yes or no)
+printf "Decide whether to use the Wc or not: [yes|no]\n"
+printf "default:no >>> "
+read -r use_Wc
+#use_Wc=$2
+
 input="$(pwd)/data"
 output="$(pwd)/out"
 
