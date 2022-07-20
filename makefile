@@ -12,7 +12,7 @@ clean:
 # Make C-style Python interpreter wrapper C-code layer.
 #
 tagger_swig.py tagger_swig_wrap.cxx: tagger_swig.i tagger.h
-	swig -python -c++ -threads $<
+	swig -python -c++ -threads -DSWIG_PYTHON_LEGACY_BOOL $<
 	
 tagger.o: tagger.cxx acronyms.h tagger.h tagger_types.h tagger_core.h acronyms.h hash.h tokens.h
 	$(CC) $(CFLAGS) -c $<
