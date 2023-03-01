@@ -1,0 +1,23 @@
+# compiled
+_tagger_swig.so
+libtagger.so
+cleandict
+environments
+organisms
+species
+tagcorpus
+*.o
+
+# swig
+tagger_swig.py
+tagger_swig_wrap.cxx
+
+# lib
+libtagger.a
+
+# output
+out
+
+# other
+logs
+# test_script.sh

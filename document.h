@@ -12,6 +12,8 @@
 #include <unordered_set>
 #include <unordered_map>
 
+typedef double SCORE;
+
 using namespace std;
 
 struct Segment
@@ -30,11 +32,12 @@ class Document
 		int key;
 		char* name;
 		char* text;
+		SCORE weight;
 		
 	public:
 		Document();
 		Document(const Document& other);
-		Document(int key, const char* text);
+		Document(int key, const char* text, SCORE weight);
 		virtual ~Document();
 		
 	public:
@@ -89,6 +92,7 @@ class TsvDocumentReader : public IDocumentReader, protected InputFile, protected
 {
 	protected:
 		unordered_set<int> seen;
+		unordered_map<int, SCORE> weights;
 		
 	public:
 		TsvDocumentReader(FILE* file);
@@ -96,29 +100,33 @@ class TsvDocumentReader : public IDocumentReader, protected InputFile, protected
 		~TsvDocumentReader();
 	
 	public:
+		void load_weights(InputFile file);
+		void load_weights(FILE* file);
+		void load_weights(const char* filename);
 		Document* read_document();
 };
-
-////////////////////////////////////////////////////////////////////////////////
 
 Document::Document()
 {
 	this->key = 0;
 	this->name = NULL;
 	this->text = NULL;
+	this->weight = 1.0;
 }
 
 Document::Document(const Document& other)
 {
 	this->key  = other.key;
+	this->weight = other.weight;
 	int length = strlen(other.text);
 	this->text = new char[length+1];
 	memcpy(this->text, other.text, length+1);
 }
 
-Document::Document(int key, const char* text)
+Document::Document(int key, const char* text, SCORE weight = 1.0)
 {
 	this->key = key;
+	this->weight = weight;
 	int length = strlen(text);
 	this->text = new char[length+1];
 	memcpy(this->text, text, length+1);
@@ -363,6 +371,26 @@ TsvDocumentReader::~TsvDocumentReader()
 {
 }
 
+void TsvDocumentReader::load_weights(InputFile file) {
+	while (true) {
+		vector<char*> fields = file.get_fields();
+		int size = fields.size();
+		if (size == 0) break;
+		if (size >= 2 && *fields[1] != '\0' && *fields[1] != '\t') {
+			weights[atoi(fields[0])] = atof(fields[1]);
+		}
+		for (vector<char*>::iterator it = fields.begin(); it != fields.end(); it++) delete *it;
+	}
+}
+
+void TsvDocumentReader::load_weights(FILE* file) {
+	load_weights(InputFile(file));
+}
+
+void TsvDocumentReader::load_weights(const char* filename) {
+	load_weights(InputFile(filename));
+}
+
 Document* TsvDocumentReader::read_document()
 {
 	TsvDocument* document = new TsvDocument();
@@ -425,6 +453,11 @@ Document* TsvDocumentReader::read_document()
 			}
 			else {
 				valid = false;
+			}
+			// Map weight.
+			unordered_map<int, SCORE>::iterator it = weights.find(document->key);
+			if (it != weights.end()) {
+				document->weight = it->second;
 			}
 		}
 		else if (line) {
